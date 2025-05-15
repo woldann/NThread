@@ -47,6 +47,10 @@ ntutils_t *_ntu_get(void)
 
 nerror_t ntu_set(ntutils_t *ntutils)
 {
+  ntutils_t *o_ntutils = ntu_get();
+  if (o_ntutils != NULL && o_ntutils != ntutils)
+    N_FREE(o_ntutils);
+
 #ifdef __WIN32
 
 	if (!TlsSetValue(ntu_tls_index, (void *)ntutils))
@@ -55,6 +59,21 @@ nerror_t ntu_set(ntutils_t *ntutils)
 #endif /* ifdef __WIN32 */
 
 	return N_OK;
+}
+
+ntutils_t *ntu_resize(size_t new_size)
+{
+  ntutils_t *ntutils;
+  ntutils_t *o_ntutils = ntu_get();
+  if (o_ntutils == NULL)
+    ntutils = N_ALLOC(new_size);
+  else
+    ntutils = N_REALLOC(o_ntutils, new_size); 
+
+  if (ntutils != NULL)
+    ntu_set(ntutils);
+
+  return ntutils;
 }
 
 #ifndef NTU_GLOBAL_CC
@@ -161,14 +180,12 @@ void ntu_global_destroy(void)
 nerror_t ntu_init(ntid_t thread_id, void *push_addr, void *sleep_addr)
 {
 	nerror_t ret;
+	ntutils_t *ntutils = ntu_resize(sizeof(ntutils_t));
 
-	ntutils_t *ntutils = N_ALLOC(sizeof(ntutils_t));
-  memset(ntutils, 0, sizeof(ntutils_t));
-
-	ntutils_t *old = ntu_get();
 	RET_ERR(ntu_set(ntutils));
-
   ntu_set_cc_ex(ntutils, NTU_DEFAULT_CC);
+
+  ntutils->nthread.thread = NULL;
 	ret = nthread_init(&ntutils->nthread, thread_id, NTHREAD_BEST_PUSH_REG,
 			   push_addr, sleep_addr);
 
@@ -185,11 +202,6 @@ nerror_t ntu_init(ntid_t thread_id, void *push_addr, void *sleep_addr)
 		ntu_destroy();
 		return ret;
   }
-
-
-
-	if (old != NULL)
-		ntu_set(old);
 
 	return ret;
 }
@@ -261,10 +273,6 @@ static nerror_t ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count,
 {
 	void *regargs[NTUCC_MAX_REGARG_COUNT];
 
-#ifdef LOG_LEVEL_3
-	LOG_INFO("ntu_set_args_v(nthread_id=%ld, args=%d, args=%p)", NTHREAD_GET_ID(&ntutils->nthread), arg_count, args);
-#endif /* ifdef LOG_LEVEL_3 */
-
 	int8_t sel_regarg_count = NTUCC_GET_REGARG_COUNT(ntutils->sel_cc);
 	int8_t regarg_count;
 
@@ -285,10 +293,18 @@ static nerror_t ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count,
 
 #ifdef NTU_GLOBAL_CC
 
+#ifdef LOG_LEVEL_3
+	LOG_INFO("ntu_set_args_v(nthread_id=%ld, args=%d, args=%p)", NTHREAD_GET_ID(&ntutils->nthread), arg_count, args);
+#endif /* ifdef LOG_LEVEL_3 */
+
   switch (NTU_GLOBAL_CC) {
     default:
   
 #else /* ifndef NTU_GLOBAL_CC */
+
+#ifdef LOG_LEVEL_3
+	LOG_INFO("ntu_set_args_v(cc=%04X, nthread_id=%ld, args=%d, args=%p)", ntutils->sel_cc, NTHREAD_GET_ID(&ntutils->nthread), arg_count, args);
+#endif /* ifdef LOG_LEVEL_3 */
 
   switch (ntutils->sel_cc) {
     default:

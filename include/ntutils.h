@@ -57,9 +57,13 @@
 
 typedef struct ntmem ntmem_t;
 
+#if !defined(NTUTILS_DISABLE_GLOBAL_CC) || NTUTILS_DISABLE_GLOBAL_CC != 1
+
 #ifdef __WIN32
 #define NTU_GLOBAL_CC NTU_DEFAULT_CC
 #endif // __WIN32
+
+#endif // !defined(NTUTILS_DISABLE_GLOBAL_CC) || NTUTILS_DISABLE_GLOBAL_CC != 1
 
 struct ntutils {
 	void *ret_value;
@@ -81,7 +85,10 @@ struct ntutils {
 typedef struct ntutils ntutils_t;
 
 ntutils_t *_ntu_get(void);
+
 nerror_t ntu_set(ntutils_t *ntutils);
+
+ntutils_t *ntu_resize(size_t new_size);
 
 #define ntu_get() _ntu_get()
 
