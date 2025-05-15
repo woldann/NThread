@@ -206,8 +206,6 @@ ntm_push(ntmem_t *ntmem, nttunnel_t *nttunnel)
     void *mem = NTM_LOCAL(ntmem);
     void *mem_cpy = NTM_LOCAL_CPY(ntmem);
     
-    LOG_INFO("mem(%p) mem_cpy(%p)", mem, mem_cpy);
-
     size_t sl = _find_diff(mem, mem_cpy, NTM_LENGTH(ntmem));
     if (sl == NTM_LENGTH(ntmem))
       return rmem;

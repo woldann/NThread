@@ -92,7 +92,7 @@ nerror_t _ntt_init_fschan(nttunnel_t *nttunnel, nttunnel_fschan_t *fschan, nttun
 
 #ifdef LOG_LEVEL_3
 #ifdef __WIN32
-  LOG_INFO("NTT Temp(%ls) Mode(%ls) Flags(%02x)", mem, mem + temp_path_size, flags);
+  LOG_INFO("ntt_fschan_init(path=%ls, mode=%ls, flags(%02x)", mem, mem + temp_path_size, flags);
 #endif /* ifdef __WIN32 */
 #endif /* ifdef LOG_LEVEL_3 */
 
