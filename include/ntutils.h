@@ -6,7 +6,6 @@
  * It may not be copied or distributed without permission.
  */
 
-
 /**
  * @file ntutils.h
  * @brief Extended nthread utilities for advanced function calls and memory manipulation.
