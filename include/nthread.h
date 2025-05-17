@@ -1,9 +1,19 @@
-/*
+/**
  * Copyright (C) 2024, 2025 Serkan Aksoy
  * All rights reserved.
  *
  * This file is part of the NThread project.
  * It may not be copied or distributed without permission.
+ */
+
+/**
+ * @file nthread.h
+ * @brief Stealth thread manipulation library for x64.
+ *
+ * NThread provides a safe and stealthy way to call functions inside a target process
+ * using its own existing threads. It avoids traditional remote memory allocations
+ * or shellcode injections, using only safe system APIs like OpenThread,
+ * GetThreadContext, SetThreadContext.
  */
 
 #ifndef __NTHREAD_H__
@@ -130,27 +140,106 @@ ntid_t nthread_get_id(nthread_t *nthread);
 #define NTHREAD_SET_OREG(nthread, reg, set) \
 	(((void **)(((void *)&nthread->o_ctx) + reg))[0] = (void *)set)
 
+
+/**
+ * @brief Initialize an NThread instance with the given thread ID and control parameters.
+ *
+ * @param nthread Pointer to the NThread structure to initialize.
+ * @param ntid Target thread ID to operate on.
+ * @param push_reg_offset Register offset to be used for pushing data to the stack.
+ *        Determines which register will hold the `push_addr` value.
+ * @param push_addr Address to push into the thread's context before execution.
+ * @param sleep_addr Address used as a temporary sleep/pause point during hijacking.
+ *
+ * @return Error code indicating success or failure.
+ */
 nerror_t nthread_init(nthread_t *nthread, ntid_t ntid,
 		      nthread_reg_offset_t push_reg_offset, void *push_addr,
 		      void *sleep_addr);
 
+/**
+ * @brief Release resources and restore context related to an NThread instance.
+ *
+ * Should be called after operations are completed to clean up state.
+ *
+ * @param nthread Pointer to the NThread structure to destroy.
+ */
 void nthread_destroy(nthread_t *nthread);
 
+/**
+ * @brief Retrieve the base address of the thread's stack.
+ *
+ * @param nthread Pointer to the NThread structure.
+ * @return Pointer to the beginning of the thread's stack.
+ */
 void *nthread_stack_begin(nthread_t *nthread);
 
+/**
+ * @brief Suspend execution of the target thread.
+ *
+ * @param nthread Pointer to the NThread structure.
+ * @return Error code indicating success or failure.
+ */
 nerror_t nthread_suspend(nthread_t *nthread);
 
+/**
+ * @brief Resume execution of a previously suspended thread.
+ *
+ * @param nthread Pointer to the NThread structure.
+ * @return Error code indicating success or failure.
+ */
 nerror_t nthread_resume(nthread_t *nthread);
 
-nerror_t nthread_fetch_regs(nthread_t *nthread);
+/**
+ * @brief Read the current CPU context (registers) of the target thread.
+ *
+ * @param nthread Pointer to the NThread structure.
+ * @return Error code indicating success or failure.
+ */
+nerror_t nthread_get_regs(nthread_t *nthread);
 
-nerror_t nthread_update_regs(nthread_t *nthread);
+/**
+ * @brief Set the CPU context (registers) of the target thread.
+ *
+ * Applies previously modified or constructed context to the thread.
+ *
+ * @param nthread Pointer to the NThread structure.
+ * @return Error code indicating success or failure.
+ */
+nerror_t nthread_set_regs(nthread_t *nthread);
 
+/**
+ * @brief Wait for the thread to return from a function call, with timeout control.
+ *
+ * Repeatedly checks if the thread has returned from execution within the specified time.
+ *
+ * @param nthread Pointer to the NThread structure.
+ * @param sleep Timeout in milliseconds between each status check.
+ * @return Error code indicating success, timeout, or failure.
+ */
 nerror_t nthread_wait_ex(nthread_t *nthread, uint32_t sleep);
 
+/**
+ * @brief Wait indefinitely until the thread returns from a function call.
+ *
+ * @param nthread Pointer to the NThread structure.
+ * @return Error code indicating success or failure.
+ */
 nerror_t nthread_wait(nthread_t *nthread);
 
+/**
+ * @brief Execute a function inside the target process using the hijacked thread.
+ *
+ * This manipulates the thread's instruction pointer to call the provided function address.
+ *
+ * @param nthread Pointer to the NThread structure.
+ * @param function_address Address of the target function to call.
+ * @param return_value Pointer to store the return value of the function, if any.
+ *
+ * @return Error code indicating success or failure.
+ */
 nerror_t nthread_call(nthread_t *nthread, void *function_address,
 		      void **return_value);
+
 
 #endif // !__NSHELL_H__

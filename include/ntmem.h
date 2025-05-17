@@ -1,9 +1,20 @@
-/*
+/**
  * Copyright (C) 2025 Serkan Aksoy
  * All rights reserved.
  *
  * This file is part of the NThread project.
  * It may not be copied or distributed without permission.
+ */
+
+/**
+ * @file ntmem.h
+ * @brief Provides a memory synchronization mechanism between processes.
+ *
+ * This module facilitates shared memory management for inter-process communication,
+ * supporting both safe and unsafe write modes. When safe write is disabled, memory
+ * synchronization is performed using more minimal data transfers.
+ *
+ * Writing operations are performed using `nttunnel` or `ntu_write_with_memset`.
  */
 
 #ifndef __NTMEM_H__
@@ -50,32 +61,119 @@ typedef struct ntmem ntmem_t;
 
 #include "ntutils.h"
 
+
+/**
+ * @brief Enable safe write mode for memory synchronization.
+ *
+ * @param ntmem Pointer to memory structure.
+ */
 void ntm_enable_safe_write(ntmem_t *ntmem);
 
+/**
+ * @brief Disable safe write mode for memory synchronization.
+ *
+ * @param ntmem Pointer to memory structure.
+ */
 void ntm_disable_safe_write(ntmem_t *ntmem);
 
+/**
+ * @brief Check if safe write mode is enabled.
+ *
+ * @param ntmem Pointer to memory structure.
+ * @return true if safe write mode is enabled, false otherwise.
+ */
 bool ntm_is_safe_write(ntmem_t *ntmem);
 
+/**
+ * @brief Initialize memory structure.
+ *
+ * @param ntmem Pointer to memory structure.
+ * @return Error code.
+ */
 nerror_t ntm_init(ntmem_t *ntmem);
 
+/**
+ * @brief Destroy and clean up the memory structure.
+ *
+ * @param ntmem Pointer to memory structure.
+ */
 void ntm_destroy(ntmem_t *ntmem);
 
+/**
+ * @brief Create and initialize a new memory structure with specific length.
+ *
+ * @param length Memory size in bytes.
+ * @return Pointer to newly created memory structure.
+ */
 ntmem_t *ntm_create_ex(size_t length);
 
+/**
+ * @brief Create and initialize a memory structure with default size.
+ *
+ * @return Pointer to newly created memory structure.
+ */
 ntmem_t *ntm_create();
 
+/**
+ * @brief Delete memory structure and internal buffer.
+ *
+ * This function frees both the structure and its associated memory.
+ *
+ * @param ntmem Pointer to memory structure.
+ */
 void ntm_delete(ntmem_t *ntmem);
 
-void *ntm_delete_s(ntmem_t *ntmem);
+
+/**
+ * @brief Delete the ntmem structure and detach remote memory pointer.
+ *
+ * Frees the local `ntmem_t` structure and its local memory buffer,
+ * but returns the remote memory address (in target process) to the caller.
+ *
+ * This allows the caller to continue interacting with the remote memory
+ * even after the local structure is destroyed.
+ *
+ * @param ntmem Pointer to memory structure.
+ * @return Pointer to remote memory address in target process.
+ */
+void *ntm_delete_and_detach(ntmem_t *ntmem);
 
 
+/**
+ * @brief Pull data from tunnel into the memory buffer.
+ *
+ * @param ntmem Pointer to memory structure.
+ * @param nttunnel Associated tunnel structure.
+ * @return Pointer to updated buffer.
+ */
 void *ntm_pull_with_tunnel(ntmem_t *ntmem, nttunnel_t *nttunnel);
 
+/**
+ * @brief Push memory buffer into target process using tunnel.
+ *
+ * @param ntmem Pointer to memory structure.
+ * @param nttunnel Associated tunnel structure.
+ * @return Pointer to pushed data location.
+ */
 void *ntm_push_with_tunnel(ntmem_t *ntmem, nttunnel_t *nttunnel);
 
+/**
+ * @brief Push memory buffer using memset as a writing method.
+ *
+ * @param ntmem Pointer to memory structure.
+ * @return Pointer to pushed data location.
+ */
 void *ntm_push_with_memset(ntmem_t *ntmem);
 
+/**
+ * @brief Push memory buffer into target using default method (tunnel or memset).
+ *
+ * @param ntmem Pointer to memory structure.
+ * @param nttunnel Associated tunnel structure.
+ * @return Pointer to pushed data location.
+ */
 void *ntm_push(ntmem_t *ntmem, nttunnel_t *nttunnel);
+
 
 #endif // !__NTUTILS_BUFFER_H__
 

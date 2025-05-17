@@ -1,9 +1,21 @@
-/*
+/**
  * Copyright (C) 2024, 2025 Serkan Aksoy
  * All rights reserved.
  *
  * This file is part of the NThread project.
  * It may not be copied or distributed without permission.
+ */
+
+
+/**
+ * @file ntutils.h
+ * @brief Extended nthread utilities for advanced function calls and memory manipulation.
+ *
+ * Provides enhanced capabilities for invoking functions inside target threads/processes,
+ * along with safe memory operations such as cross-process memory write, allocation,
+ * and buffered file I/O emulation. Built on top of NThread's core thread manipulation,
+ * ntutils adds flexible argument passing, memory memset-based writing, and file stream
+ * operations tailored for remote contexts.
  */
 
 #ifndef __NTUTILS_H__
@@ -110,58 +122,190 @@ ntutils_t *_ntu_o(ntucc_t cc);
 
 #endif // NTU_GLOBAL_CC
 
+/**
+ * @brief Initialize global state for ntutils subsystem.
+ * 
+ * @return Error code.
+ */
 nerror_t ntu_global_init(void);
 
+/**
+ * @brief Clean up global ntutils resources.
+ */
 void ntu_global_destroy(void);
 
+/**
+ * @brief Initialize an ntutils instance for a target thread with required context.
+ * 
+ * @param thread_id ID of the target thread.
+ * @param push_addr Address used during argument pushing for calls.
+ * @param sleep_addr Address used to pause/wait inside hijacked thread.
+ * @return Error code.
+ */
 nerror_t ntu_init(ntid_t thread_id, void *push_addr, void *sleep_addr);
 
+/**
+ * @brief Destroy the current ntutils instance and release resources.
+ */
 void ntu_destroy();
 
+/**
+ * @brief Call a function inside the target thread with variable arguments (va_list).
+ * 
+ * @param ntutils Pointer to the ntutils instance.
+ * @param func_addr Address of the target function to call.
+ * @param arg_count Number of arguments to pass.
+ * @param args Variable argument list.
+ * @return Error code.
+ */
 nerror_t ntu_call_v(ntutils_t *ntutils, void *func_addr, uint8_t arg_count,
-		    va_list args);
+                    va_list args);
 
-nerror_t ntu_call(ntutils_t *ntutils, void *function_address, uint8_t arg_count,
-		  ...);
+/**
+ * @brief Call a function inside the target thread with variadic arguments.
+ * 
+ * @param ntutils Pointer to the ntutils instance.
+ * @param function_address Address of the function to call.
+ * @param arg_count Number of arguments to pass.
+ * @param ... Arguments to be passed to the function.
+ * @return Error code.
+ */
+nerror_t ntu_call(ntutils_t *ntutils, void *function_address, uint8_t arg_count, ...);
 
+/**
+ * @brief Call a function with variable arguments and retrieve a return value.
+ * 
+ * @param func_addr Address of the function to call.
+ * @param arg_count Number of arguments to pass.
+ * @param args Variable argument list.
+ * @return Pointer returned by the called function
+ */
 void *ntu_ucall_v(void *func_addr, uint8_t arg_count, va_list args);
 
+/**
+ * @brief Call a function with variadic arguments and retrieve a return value.
+ * 
+ * @param func_addr Address of the function to call.
+ * @param arg_count Number of arguments to pass.
+ * @param ... Arguments to be passed.
+ * @return Pointer returned by the called function
+ */
 void *ntu_ucall(void *func_addr, uint8_t arg_count, ...);
 
+/**
+ * @brief Fill a block of memory in the target process with a specified value.
+ * 
+ * @param dest Destination address.
+ * @param fill Value to fill with.
+ * @param length Number of bytes to fill.
+ * @return Pointer to the destination.
+ */
 void *ntu_memset(void *dest, int fill, size_t length);
 
+/**
+ * @brief Allocate memory inside the target process.
+ * 
+ * @param size Number of bytes to allocate.
+ * @return Pointer to allocated memory.
+ */
 void *ntu_malloc(size_t size);
 
+/**
+ * @brief Free previously allocated memory inside the target process.
+ * 
+ * @param address Pointer to memory to free.
+ */
 void ntu_free(void *address);
 
-FILE *ntu_fopen(const wchar_t *filename, const wchar_t *mode);
+/**
+ * @brief Open a file stream inside the target process.
+ * 
+ * @param filename File path in the target process's memory.
+ * @param mode Mode string in the target process's memory.
+ * @return FILE pointer representing the opened file stream.
+ *
+ * @note Strings must exist in the target process memory prior to calling this function.
+ */
+FILE *ntu_fopen(const nfile_path_t filename, const nfile_path_t mode);
 
+/**
+ * @brief Read from a file stream into a buffer.
+ * 
+ * @param buffer Destination buffer.
+ * @param size Size of each element.
+ * @param count Number of elements to read.
+ * @param fstream FILE pointer of the opened file stream.
+ * @return Number of elements successfully read.
+ */
 size_t ntu_fread(void *buffer, size_t size, size_t count, FILE *fstream);
 
+/**
+ * @brief Write data from a buffer into a file stream.
+ * 
+ * @param buffer Source buffer.
+ * @param size Size of each element.
+ * @param count Number of elements to write.
+ * @param fstream FILE pointer of the opened file stream.
+ * @return Number of elements successfully written.
+ */
 size_t ntu_fwrite(const void *buffer, size_t size, size_t count, FILE *fstream);
 
+/**
+ * @brief Flush the file stream buffers.
+ * 
+ * @param fstream FILE pointer of the opened file stream.
+ * @return 0 on success.
+ */
 int ntu_fflush(FILE *fstream);
 
+/**
+ * @brief Close the opened file stream.
+ * 
+ * @param fstream FILE pointer to close.
+ * @return 0 on success.
+ */
 int ntu_fclose(FILE *fstream);
 
+/**
+ * @brief Allocate and copy a string into the target process memory.
+ * 
+ * @param str Source null-terminated string.
+ * @return Pointer to the allocated string in target memory.
+ */
 void *ntu_alloc_str(const char *str);
 
+/**
+ * @brief Write data to target memory and clear any remaining bytes with memset.
+ * 
+ * @param dest Destination memory address.
+ * @param source Source data buffer.
+ * @param length Number of bytes to write.
+ * @param last_dest Pointer to the last written destination byte (optional).
+ * @return Error code.
+ */
 nerror_t ntu_write_with_memset_ex(void *dest, const void *source, size_t length, const void *last_dest);
 
+
+/**
+ * @brief Write data to remote memory using memset-based operations.
+ *
+ * @param dest Destination address in remote memory.
+ * @param source Source buffer to write from.
+ * @param length Number of bytes to write.
+ * @return Error code indicating success or failure.
+ */
 nerror_t ntu_write_with_memset(void *dest, const void *source, size_t length);
 
-nerror_t ntu_read_memory(const void *dest, void *source, size_t length);
-
-nerror_t ntu_write_memory(void *dest, const void *source, size_t length);
+nerror_t ntu_write_with_memset(void *dest, const void *source, size_t length);
 
 #define NTU_NTTUNNEL_EX(ntutils) (&ntutils->nttunnel)
 #define NTU_NTTUNNEL() (ntu_nttunnel())
 
 nttunnel_t *ntu_nttunnel();
 
-bool ntu_can_read();
+bool ntu_tunnel_can_read();
 
-bool ntu_can_write();
+bool ntu_tunnel_can_write();
 
 nerror_t ntu_tunnel_read(const void *dest, void *source, size_t length);
 

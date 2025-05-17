@@ -33,7 +33,6 @@ ntm_init(ntmem_t *ntmem)
 
   memset(mem, 0, NTM_LOCAL_SIZE(ntmem));
 
-
   NTM_SET_REMOTE(ntmem, ntu_malloc(len));
   if (NTM_REMOTE(ntmem) == NULL)
     return GET_ERR(NTMEM_NTU_MALLOC_ERROR);

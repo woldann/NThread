@@ -1,9 +1,17 @@
-/*
+/**
  * Copyright (C) 2024, 2025 Serkan Aksoy
  * All rights reserved.
  *
  * This file is part of the NThread project.
  * It may not be copied or distributed without permission.
+ */
+
+/**
+ * @file ntucc.h
+ * @brief Calling convention helper macros for ntutils.
+ *
+ * Provides simplified and more readable macro definitions to select and apply
+ * calling conventions when working with ntutils-related function calls.
  */
 
 #ifndef __NTU_CC__

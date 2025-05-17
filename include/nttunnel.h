@@ -1,9 +1,23 @@
-/*
+/**
  * Copyright (C) 2025 Serkan Aksoy
  * All rights reserved.
  *
  * This file is part of the NThread project.
  * It may not be copied or distributed without permission.
+ */
+
+/**
+ * @file nttunnel.h
+ * @brief High-level memory tunnel utilities using filesystem channel (FSCHAN).
+ *
+ * This module provides advanced memory read/write capabilities by building on top
+ * of the basic `ntutils` operations. It introduces a read mechanism and improves
+ * write operations via a virtual tunnel abstraction. 
+ *
+ * It uses `ntu_write_with_memset` internally for memory writes.
+ * 
+ * FSCHAN (File System Channel) refers to the logical memory communication channel
+ * established between processes or within the same process context.
  */
 
 #ifndef __NTTUNNEL_H__
@@ -80,19 +94,70 @@ typedef struct nttunnel nttunnel_t;
 
 #include "ntutils.h"
 
+
+/**
+ * @brief Check if the tunnel is ready for reading.
+ *
+ * @param nttunnel Pointer to the tunnel structure.
+ * @return true if reading is available; false otherwise.
+ */
 bool ntt_can_read(nttunnel_t *nttunnel);
 
+/**
+ * @brief Check if the tunnel is ready for writing.
+ *
+ * @param nttunnel Pointer to the tunnel structure.
+ * @return true if writing is available; false otherwise.
+ */
 bool ntt_can_write(nttunnel_t *nttunnel);
 
+/**
+ * @brief Initialize the tunnel with specific FSCHAN flags.
+ *
+ * @param nttunnel Pointer to the tunnel structure.
+ * @param flags Flags controlling tunnel behavior.
+ * @return Error code.
+ */
 nerror_t ntt_init_ex(nttunnel_t *nttunnel, nttunnel_fschan_flags_t flags);
 
+/**
+ * @brief Initialize the tunnel with default settings.
+ *
+ * @param nttunnel Pointer to the tunnel structure.
+ * @return Error.
+ */
 nerror_t ntt_init(nttunnel_t *nttunnel);
 
+/**
+ * @brief Clean up and release resources associated with the tunnel.
+ *
+ * @param nttunnel Pointer to the tunnel structure.
+ */
 void ntt_destroy(nttunnel_t *nttunnel);
 
-
+/**
+ * @brief Read memory through the tunnel.
+ *
+ * @param nttunnel Pointer to the tunnel structure.
+ * @param dest Address in local memory to copy data into.
+ * @param source Source address in the remote or target memory.
+ * @param length Number of bytes to read.
+ * @return Error code.
+ */
 nerror_t ntt_read(nttunnel_t *nttunnel, const void *dest, void *source, size_t length);
 
+/**
+ * @brief Write memory through the tunnel.
+ *
+ * This function uses `ntu_write_with_memset` internally to perform the memory write.
+ *
+ * @param nttunnel Pointer to the tunnel structure.
+ * @param dest Destination address in the remote or target memory.
+ * @param source Local buffer to write from.
+ * @param length Number of bytes to write.
+ * @return Error code.
+ */
 nerror_t ntt_write(nttunnel_t *nttunnel, void *dest, const void *source, size_t length);
+
 
 #endif // !__NTTUNNEL_H__

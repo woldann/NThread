@@ -393,7 +393,7 @@ void ntu_free(void *address)
 	ntu_ucall(ntu_funcs.free, 1, address);
 }
 
-FILE *ntu_fopen(const wchar_t *filename, const wchar_t *mode)
+FILE *ntu_fopen(const nfile_path_t filename, const nfile_path_t mode)
 {
   ntu_set_cc(NTU_DEFAULT_CC);
 	return (FILE *)ntu_ucall(ntu_funcs.fopen, 2, filename, mode);
@@ -450,13 +450,6 @@ ntu_alloc_str_ex(const char *str, size_t alloc_len, size_t str_len)
 }
 
 void *
-ntu_alloc_nstr(const char *str, size_t len)
-{
-	size_t str_len = (strlen(str) + 1) * sizeof(*str);
-  return ntu_alloc_str_ex(str, len, str_len);
-}
-
-void *
 ntu_alloc_str(const char *str)
 {
 	size_t str_len = (strlen(str) + 1) * sizeof(*str);
@@ -469,13 +462,13 @@ nttunnel_t *ntu_nttunnel()
   return NTU_NTTUNNEL_EX(ntutils);
 }
 
-bool ntu_can_read()
+bool ntu_tunnel_can_read()
 {
   nttunnel_t *nttunnel = ntu_nttunnel();
   return ntt_can_read(nttunnel);
 }
 
-bool ntu_can_write()
+bool ntu_tunnel_can_write()
 {
   nttunnel_t *nttunnel = ntu_nttunnel();
   return ntt_can_write(nttunnel);

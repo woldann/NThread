@@ -55,7 +55,7 @@ nerror_t nthread_init(nthread_t *nthread, ntid_t thread_id,
 
 	nerror_t error_helper;
 
-	error_helper = nthread_fetch_regs(nthread);
+	error_helper = nthread_get_regs(nthread);
 	if (HAS_ERR(error_helper)) {
 nthread_init_resume_n_exit:
 		nthread_resume(nthread);
@@ -76,7 +76,7 @@ nthread_init_destroy_n_exit:
 
 #endif /* ifdef __WIN32 */
 
-	error_helper = nthread_update_regs(nthread);
+	error_helper = nthread_set_regs(nthread);
 	if (HAS_ERR(error_helper))
 		goto nthread_init_resume_n_exit;
 
@@ -114,7 +114,7 @@ void nthread_destroy(nthread_t *nthread)
 		memcpy((void *)&nthread->n_ctx, (void *)&nthread->o_ctx,
 		       sizeof(CONTEXT));
 
-		nthread_update_regs(nthread);
+		nthread_set_regs(nthread);
 	}
 
 	if (nthread->thread != NULL)
@@ -184,7 +184,7 @@ nerror_t nthread_resume(nthread_t *nthread)
 	return N_OK;
 }
 
-nerror_t nthread_fetch_regs(nthread_t *nthread)
+nerror_t nthread_get_regs(nthread_t *nthread)
 {
 #ifdef __WIN32
 
@@ -196,7 +196,7 @@ nerror_t nthread_fetch_regs(nthread_t *nthread)
 	return N_OK;
 }
 
-nerror_t nthread_update_regs(nthread_t *nthread)
+nerror_t nthread_set_regs(nthread_t *nthread)
 {
 #ifdef __WIN32
 
@@ -215,7 +215,7 @@ nerror_t nthread_wait_ex(nthread_t *nthread, uint32_t sleep)
 		Sleep((DWORD)sleep);
 #endif /* ifdef __WIN32 */
 
-		RET_ERR(nthread_fetch_regs(nthread));
+		RET_ERR(nthread_get_regs(nthread));
 
 		void *rip = NTHREAD_GET_REG(nthread, NTHREAD_RIP);
 		if (rip == nthread->sleep_addr)
@@ -242,7 +242,7 @@ nerror_t nthread_call(nthread_t *nthread, void *fun_addr, void **return_value)
 	void *rsp = nthread_stack_begin(nthread);
 	NTHREAD_SET_REG(nthread, NTHREAD_RSP, rsp - sizeof(fun_addr));
 
-	RET_ERR(nthread_update_regs(nthread));
+	RET_ERR(nthread_set_regs(nthread));
 	RET_ERR(nthread_wait(nthread));
 
 	*return_value = NTHREAD_GET_REG(nthread, NTHREAD_RAX);
