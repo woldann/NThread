@@ -83,7 +83,7 @@ void ntm_delete(ntmem_t *ntmem)
   N_FREE(ntmem);
 }
 
-void *ntm_delete_s(ntmem_t *ntmem)
+void *ntm_delete_and_detach(ntmem_t *ntmem)
 {
   void *rmem = NTM_REMOTE(ntmem);
   N_FREE(ntmem);
