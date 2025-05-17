@@ -70,7 +70,6 @@ struct ntutils {
 	ntucc_t sel_cc;
 
   nttunnel_t nttunnel;
-  ntmem_t *ntmem; 
 
 #ifdef __WIN32
 
@@ -154,21 +153,6 @@ nerror_t ntu_write_with_memset(void *dest, const void *source, size_t length);
 nerror_t ntu_read_memory(const void *dest, void *source, size_t length);
 
 nerror_t ntu_write_memory(void *dest, const void *source, size_t length);
-
-#define NTU_NTMEM_EX(ntutils) (ntutils->ntmem)
-#define NTU_NTMEM() (ntu_ntmem())
-
-ntmem_t *ntu_ntmem();
-
-void *ntu_rmem();
-
-void *ntu_mem();
-
-void *ntu_mem_pull();
-
-void *ntu_mem_push_memset();
-
-void *ntu_mem_push();
 
 #define NTU_NTTUNNEL_EX(ntutils) (&ntutils->nttunnel)
 #define NTU_NTTUNNEL() (ntu_nttunnel())

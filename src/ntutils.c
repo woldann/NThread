@@ -194,14 +194,8 @@ nerror_t ntu_init(ntid_t thread_id, void *push_addr, void *sleep_addr)
 
   ret = ntt_init(NTU_NTTUNNEL_EX(ntutils));
   if (HAS_ERR(ret))
-    goto ntu_init_error_exit;
-
-  ntutils->ntmem = ntm_create();
-  if (ntutils->ntmem == NULL) {
   ntu_init_error_exit:
 		ntu_destroy();
-		return ret;
-  }
 
 	return ret;
 }
@@ -217,9 +211,6 @@ void ntu_destroy()
 			ntu_free(ntutils->temp_path_addr);
     
     ntt_destroy(NTU_NTTUNNEL_EX(ntutils));
-
-    if (ntutils->ntmem != NULL)
-      ntm_delete(ntutils->ntmem);
 
 		nthread_destroy(&ntutils->nthread);
 	}
@@ -470,36 +461,6 @@ ntu_alloc_str(const char *str)
 {
 	size_t str_len = (strlen(str) + 1) * sizeof(*str);
   return ntu_alloc_str_ex(str, str_len, str_len);
-}
-
-ntmem_t *ntu_ntmem() {
-  ntutils_t *ntutils = ntu_get();
-  return NTU_NTMEM_EX(ntutils);
-}
-
-void *ntu_rmem() {
-  ntmem_t *ntmem = ntu_ntmem();
-  return NTM_REMOTE(ntmem);
-}
-
-void *ntu_mem() {
-  ntmem_t *ntmem = ntu_ntmem();
-  return NTM_LOCAL(ntmem);
-}
-
-void *ntu_mem_pull() {
-  ntmem_t *ntmem = ntu_ntmem();
-  nttunnel_t *nttunnel = ntu_nttunnel();
-
-  return ntm_pull_with_tunnel(ntmem, nttunnel);
-}
-
-void *ntu_mem_push()
-{
-  ntmem_t *ntmem = ntu_ntmem();
-  nttunnel_t *nttunnel = ntu_nttunnel();
-
-  return ntm_push(ntmem, nttunnel);
 }
 
 nttunnel_t *ntu_nttunnel()
