@@ -69,14 +69,14 @@ int main(int argc, char *argv[])
 	char test_str[] = "test string";
 	void *str_addr = ntu_alloc_str(test_str);
 	if (str_addr == NULL) {
-    ntu_destroy();
+		ntu_destroy();
 		neptune_destroy();
 		return 0x34;
 	}
 
-	int8_t buffer[64];
+	int8_t buffer[64] = { 0 };
 	if (HAS_ERR(ntu_read_memory(str_addr, buffer, sizeof(test_str)))) {
-    ntu_destroy();
+		ntu_destroy();
 		neptune_destroy();
 		return 0x35;
 	}
@@ -84,12 +84,12 @@ int main(int argc, char *argv[])
 	ntu_free(str_addr);
 	LOG_INFO("Buffer: %s", buffer);
 	if (strcmp((void *)buffer, test_str) != 0) {
-    ntu_destroy();
+		ntu_destroy();
 		neptune_destroy();
 		return 0x36;
 	}
 
-  ntu_destroy();
+	ntu_destroy();
 	neptune_destroy();
 	return EXIT_SUCCESS;
 }

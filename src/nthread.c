@@ -141,7 +141,8 @@ nerror_t nthread_suspend(nthread_t *nthread)
 #ifdef LOG_LEVEL_1
 
 	if (count == (DWORD)(-1)) {
-		LOG_WARN("nthread_suspend(nthread_id=%ld) failed", NTHREAD_GET_ID(nthread));
+		LOG_WARN("nthread_suspend(nthread_id=%ld) failed",
+			 NTHREAD_GET_ID(nthread));
 		return GET_ERR(NTHREAD_SUSPEND_ERROR);
 	}
 
@@ -169,7 +170,8 @@ nerror_t nthread_resume(nthread_t *nthread)
 #ifdef LOG_LEVEL_1
 
 	if (count == (DWORD)(-1)) {
-		LOG_WARN("nthread_resume(nthread_id=%ld) failed", NTHREAD_GET_ID(nthread));
+		LOG_WARN("nthread_resume(nthread_id=%ld) failed",
+			 NTHREAD_GET_ID(nthread));
 		return GET_ERR(NTHREAD_RESUME_ERROR);
 	}
 
@@ -232,8 +234,8 @@ nerror_t nthread_call(nthread_t *nthread, void *fun_addr, void **return_value)
 {
 #ifdef LOG_LEVEL_3
 
-	LOG_INFO("nthread_call(nthread_id=%ld, fun_addr=%p, return_value=%p)", NTHREAD_GET_ID(nthread),
-		 fun_addr, return_value);
+	LOG_INFO("nthread_call(nthread_id=%ld, fun_addr=%p, return_value=%p)",
+		 NTHREAD_GET_ID(nthread), fun_addr, return_value);
 
 #endif /* ifdef LOG_LEVEL_3 */
 

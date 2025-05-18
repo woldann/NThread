@@ -8,7 +8,6 @@
 
 #include "ntutils.h"
 
-#ifdef __NTUTILS_H__ 
-  NEPTUNE_MODULE(ntu_global_init, ntu_global_destroy)
+#ifdef __NTUTILS_H__
+NEPTUNE_MODULE(ntu_global_init, ntu_global_destroy)
 #endif // __NTUTILS_H__
-

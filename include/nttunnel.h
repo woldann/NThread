@@ -43,19 +43,21 @@
 #define NTTUNNEL_FSCHAN_WRITE_MODE 0x10
 #define NTTUNNEL_FSCHAN_CREATE_TEMP_PATH 0x20
 
-#define NTTUNNEL_FSCHAN_DEFAULT_FLAGS NTTUNNEL_FSCHAN_MAX_TRANSFER_262144 | NTTUNNEL_FSCHAN_CREATE_TEMP_PATH
+#define NTTUNNEL_FSCHAN_DEFAULT_FLAGS \
+	NTTUNNEL_FSCHAN_MAX_TRANSFER_262144 | NTTUNNEL_FSCHAN_CREATE_TEMP_PATH
 
 #define NTTUNNEL_FSCHAN_MAX_MODE_SIZE 6
 
-#define NTTUNNEL_FSCHAN_CALC_MAX_TRANSFER(flags) (((size_t) 4) << (6 + (flags & 0x07) * 2))
+#define NTTUNNEL_FSCHAN_CALC_MAX_TRANSFER(flags) \
+	(((size_t)4) << (6 + (flags & 0x07) * 2))
 
 typedef int8_t nttunnel_fschan_flags_t;
 
 struct nttunnel_fschan {
-  void *remote_file;
-  nfile_t local_file;
+	void *remote_file;
+	nfile_t local_file;
 
-  nfile_path_t path;
+	nfile_path_t path;
 };
 
 typedef struct nttunnel_fschan nttunnel_fschan_t;
@@ -63,15 +65,15 @@ typedef struct nttunnel_fschan nttunnel_fschan_t;
 typedef struct ntmem ntmem_t;
 
 struct nttunnel {
-  ntmem_t *ntmem;
+	ntmem_t *ntmem;
 
-  nttunnel_fschan_t read;
-  size_t read_transfer; 
+	nttunnel_fschan_t read;
+	size_t read_transfer;
 
-  nttunnel_fschan_t write;
-  size_t write_transfer; 
+	nttunnel_fschan_t write;
+	size_t write_transfer;
 
-  size_t max_transfer;
+	size_t max_transfer;
 };
 
 typedef struct nttunnel nttunnel_t;
@@ -93,7 +95,6 @@ typedef struct nttunnel nttunnel_t;
 #define NTTUNNEL_NTM_CREATE_ERROR 0x760f
 
 #include "ntutils.h"
-
 
 /**
  * @brief Check if the tunnel is ready for reading.
@@ -144,7 +145,8 @@ void ntt_destroy(nttunnel_t *nttunnel);
  * @param length Number of bytes to read.
  * @return Error code.
  */
-nerror_t ntt_read(nttunnel_t *nttunnel, const void *dest, void *source, size_t length);
+nerror_t ntt_read(nttunnel_t *nttunnel, const void *dest, void *source,
+		  size_t length);
 
 /**
  * @brief Write memory through the tunnel.
@@ -157,7 +159,7 @@ nerror_t ntt_read(nttunnel_t *nttunnel, const void *dest, void *source, size_t l
  * @param length Number of bytes to write.
  * @return Error code.
  */
-nerror_t ntt_write(nttunnel_t *nttunnel, void *dest, const void *source, size_t length);
-
+nerror_t ntt_write(nttunnel_t *nttunnel, void *dest, const void *source,
+		   size_t length);
 
 #endif // !__NTTUNNEL_H__

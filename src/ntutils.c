@@ -28,7 +28,7 @@ struct ntutils_tfunctions {
 	void *memset;
 	void *malloc;
 	void *fwrite;
-  void *fflush;
+	void *fflush;
 	void *fclose;
 	void *fread;
 	void *free;
@@ -47,9 +47,9 @@ ntutils_t *_ntu_get(void)
 
 nerror_t ntu_set(ntutils_t *ntutils)
 {
-  ntutils_t *o_ntutils = ntu_get();
-  if (o_ntutils != NULL && o_ntutils != ntutils)
-    N_FREE(o_ntutils);
+	ntutils_t *o_ntutils = ntu_get();
+	if (o_ntutils != NULL && o_ntutils != ntutils)
+		N_FREE(o_ntutils);
 
 #ifdef __WIN32
 
@@ -63,33 +63,35 @@ nerror_t ntu_set(ntutils_t *ntutils)
 
 ntutils_t *ntu_resize(size_t new_size)
 {
-  ntutils_t *ntutils;
-  ntutils_t *o_ntutils = ntu_get();
-  if (o_ntutils == NULL)
-    ntutils = N_ALLOC(new_size);
-  else
-    ntutils = N_REALLOC(o_ntutils, new_size); 
+	ntutils_t *ntutils;
+	ntutils_t *o_ntutils = ntu_get();
+	if (o_ntutils == NULL)
+		ntutils = N_ALLOC(new_size);
+	else
+		ntutils = N_REALLOC(o_ntutils, new_size);
 
-  if (ntutils != NULL)
-    ntu_set(ntutils);
+	if (ntutils != NULL)
+		ntu_set(ntutils);
 
-  return ntutils;
+	return ntutils;
 }
 
 #ifndef NTU_GLOBAL_CC
 
-void _ntu_set_cc(ntucc_t cc) {
-  ntutils_t *ntutils = ntu_get();
-  if (ntutils != NULL)
-    ntu_set_cc_ex(ntutils, cc);
+void _ntu_set_cc(ntucc_t cc)
+{
+	ntutils_t *ntutils = ntu_get();
+	if (ntutils != NULL)
+		ntu_set_cc_ex(ntutils, cc);
 }
 
-ntutils_t *_ntu_o(ntucc_t cc) {
-  ntutils_t *ntutils = ntu_get();
-  if (ntutils != NULL)
-    ntu_set_cc_ex(ntutils, cc);
+ntutils_t *_ntu_o(ntucc_t cc)
+{
+	ntutils_t *ntutils = ntu_get();
+	if (ntutils != NULL)
+		ntu_set_cc_ex(ntutils, cc);
 
-  return ntutils;
+	return ntutils;
 }
 
 #endif // !NTU_GLOBAL_CC
@@ -107,18 +109,17 @@ nerror_t ntu_global_init(void)
 #endif /* ifdef __WIN32 */
 
 	if (libc_module == NULL) {
-
 #ifdef LOG_LEVEL_1
 
-	  libc_module = GetModuleHandleA("msvcrt");  
-    LOG_ERROR("ntutils falling back to msvcrt");
-    if (libc_module == NULL)
-		  return GET_ERR(NTUTILS_ERROR_GET_LIBC);
+		libc_module = GetModuleHandleA("msvcrt");
+		LOG_ERROR("ntutils falling back to msvcrt");
+		if (libc_module == NULL)
+			return GET_ERR(NTUTILS_ERROR_GET_LIBC);
 
 #else /* ifndef LOG_LEVEL_1 */
 		return GET_ERR(NTUTILS_ERROR_GET_LIBC);
 #endif /* ifndef LOG_LEVEL_1 */
-  }
+	}
 
 #ifdef __WIN32
 	char fun_names[] = "_wfopen\x05memsetmallocfwritefflushfclosefreadfree";
@@ -183,18 +184,18 @@ nerror_t ntu_init(ntid_t thread_id, void *push_addr, void *sleep_addr)
 	ntutils_t *ntutils = ntu_resize(sizeof(ntutils_t));
 
 	RET_ERR(ntu_set(ntutils));
-  ntu_set_cc_ex(ntutils, NTU_DEFAULT_CC);
+	ntu_set_cc_ex(ntutils, NTU_DEFAULT_CC);
 
-  ntutils->nthread.thread = NULL;
+	ntutils->nthread.thread = NULL;
 	ret = nthread_init(&ntutils->nthread, thread_id, NTHREAD_BEST_PUSH_REG,
 			   push_addr, sleep_addr);
 
 	if (HAS_ERR(ret))
 		goto ntu_init_error_exit;
 
-  ret = ntt_init(NTU_NTTUNNEL_EX(ntutils));
-  if (HAS_ERR(ret))
-  ntu_init_error_exit:
+	ret = ntt_init(NTU_NTTUNNEL_EX(ntutils));
+	if (HAS_ERR(ret))
+ntu_init_error_exit:
 		ntu_destroy();
 
 	return ret;
@@ -209,8 +210,8 @@ void ntu_destroy()
 	if (ntutils->nthread.thread != NULL) {
 		if (ntutils->temp_path_addr != NULL)
 			ntu_free(ntutils->temp_path_addr);
-    
-    ntt_destroy(NTU_NTTUNNEL_EX(ntutils));
+
+		ntt_destroy(NTU_NTTUNNEL_EX(ntutils));
 
 		nthread_destroy(&ntutils->nthread);
 	}
@@ -218,17 +219,19 @@ void ntu_destroy()
 	ntu_set(NULL);
 }
 
-nerror_t ntu_write_with_memset_ex(void *dest, const void *source, size_t length, const void *last_dest)
+nerror_t ntu_write_with_memset_ex(void *dest, const void *source, size_t length,
+				  const void *last_dest)
 {
-	size_t i = 0, j; 
+	size_t i = 0, j;
 	while (i < length) {
-    if (last_dest != NULL) {
-      while (((int8_t *)last_dest)[i] == ((int8_t *)source)[i]) {
-        i++;
-        if (i >= length)
-          break;
-      }
-    }
+		if (last_dest != NULL) {
+			while (((int8_t *)last_dest)[i] ==
+			       ((int8_t *)source)[i]) {
+				i++;
+				if (i >= length)
+					break;
+			}
+		}
 
 		int8_t ms_value = ((int8_t *)source)[i];
 		for (j = i + 1; j < length; j++) {
@@ -248,14 +251,13 @@ nerror_t ntu_write_with_memset_ex(void *dest, const void *source, size_t length,
 
 nerror_t ntu_write_with_memset(void *dest, const void *source, size_t length)
 {
-  return ntu_write_with_memset_ex(dest, source, length, 0);
+	return ntu_write_with_memset_ex(dest, source, length, 0);
 }
 
 #ifdef NTUCC_WINDOWS_X64
 
-static nthread_reg_offset_t winx64_regargs[] = {
-	NTHREAD_RCX, NTHREAD_RDX, NTHREAD_R8, NTHREAD_R9
-};
+static nthread_reg_offset_t winx64_regargs[] = { NTHREAD_RCX, NTHREAD_RDX,
+						 NTHREAD_R8, NTHREAD_R9 };
 
 #endif /* ifdef NTUCC_WINDOWS_X64 */
 
@@ -285,44 +287,45 @@ static nerror_t ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count,
 #ifdef NTU_GLOBAL_CC
 
 #ifdef LOG_LEVEL_3
-	LOG_INFO("ntu_set_args_v(nthread_id=%ld, args=%d, args=%p)", NTHREAD_GET_ID(&ntutils->nthread), arg_count, args);
+	LOG_INFO("ntu_set_args_v(nthread_id=%ld, args=%d, args=%p)",
+		 NTHREAD_GET_ID(&ntutils->nthread), arg_count, args);
 #endif /* ifdef LOG_LEVEL_3 */
 
-  switch (NTU_GLOBAL_CC) {
-    default:
-  
+	switch (NTU_GLOBAL_CC) {
+	default:
+
 #else /* ifndef NTU_GLOBAL_CC */
 
 #ifdef LOG_LEVEL_3
-	LOG_INFO("ntu_set_args_v(cc=%04X, nthread_id=%ld, args=%d, args=%p)", ntutils->sel_cc, NTHREAD_GET_ID(&ntutils->nthread), arg_count, args);
+	LOG_INFO("ntu_set_args_v(cc=%04X, nthread_id=%ld, args=%d, args=%p)",
+		 ntutils->sel_cc, NTHREAD_GET_ID(&ntutils->nthread), arg_count,
+		 args);
 #endif /* ifdef LOG_LEVEL_3 */
 
-  switch (ntutils->sel_cc) {
-    default:
-		  return GET_ERR(NTUTILS_UNKNOWN_CC_ERROR);
+	switch (ntutils->sel_cc) {
+	default:
+		return GET_ERR(NTUTILS_UNKNOWN_CC_ERROR);
 
 #endif /* ifndef NTU_GLOBAL_CC */
 
 #ifdef NTUCC_WINDOWS_X64
 
-    case NTUCC_WINDOWS_X64:
-		  regargs_list = winx64_regargs;
-    ntu_sel_cc_winx64:
-      wpos = rsp + sizeof(void *) * 4;
-      break;
+	case NTUCC_WINDOWS_X64:
+		regargs_list = winx64_regargs;
+ntu_sel_cc_winx64:
+		wpos = rsp + sizeof(void *) * 4;
+		break;
 
 #endif /* ifdef NTUCC_WINDOWS_X64 */
 
-
 #ifdef NTUCC_WINDOWS_X64_PASS_RCX
-    
-    case NTUCC_WINDOWS_X64_PASS_RCX:
-      regargs_list = winx64_regargs + 1;
-      goto ntu_sel_cc_winx64;
+
+	case NTUCC_WINDOWS_X64_PASS_RCX:
+		regargs_list = winx64_regargs + 1;
+		goto ntu_sel_cc_winx64;
 
 #endif /* ifdef NTUCC_WINDOWS_X64_PASS_RCX */
-
-  }
+	}
 
 	for (uint8_t i = 0; i < pusharg_count; i++) {
 		void *arg = va_arg(args, void *);
@@ -377,38 +380,38 @@ void *ntu_ucall(void *func_addr, uint8_t arg_count, ...)
 
 void *ntu_memset(void *dest, int fill, size_t length)
 {
-  ntu_set_cc(NTU_DEFAULT_CC);
+	ntu_set_cc(NTU_DEFAULT_CC);
 	return ntu_ucall(ntu_funcs.memset, 3, dest, fill, length);
 }
 
 void *ntu_malloc(size_t size)
 {
-  ntu_set_cc(NTU_DEFAULT_CC);
+	ntu_set_cc(NTU_DEFAULT_CC);
 	return ntu_ucall(ntu_funcs.malloc, 1, size);
 }
 
 void ntu_free(void *address)
 {
-  ntu_set_cc(NTU_DEFAULT_CC);
+	ntu_set_cc(NTU_DEFAULT_CC);
 	ntu_ucall(ntu_funcs.free, 1, address);
 }
 
 FILE *ntu_fopen(const nfile_path_t filename, const nfile_path_t mode)
 {
-  ntu_set_cc(NTU_DEFAULT_CC);
+	ntu_set_cc(NTU_DEFAULT_CC);
 	return (FILE *)ntu_ucall(ntu_funcs.fopen, 2, filename, mode);
 }
 
 size_t ntu_fread(void *buffer, size_t size, size_t count, FILE *fstream)
 {
-  ntu_set_cc(NTU_DEFAULT_CC);
+	ntu_set_cc(NTU_DEFAULT_CC);
 	return (size_t)ntu_ucall(ntu_funcs.fread, 4, buffer, size, count,
 				 fstream);
 }
 
 size_t ntu_fwrite(const void *buffer, size_t size, size_t count, FILE *fstream)
 {
-  ntu_set_cc(NTU_DEFAULT_CC);
+	ntu_set_cc(NTU_DEFAULT_CC);
 	return (size_t)ntu_ucall(ntu_funcs.fwrite, 4, buffer, size, count,
 				 fstream);
 }
@@ -431,13 +434,12 @@ int ntu_fclose(FILE *fstream)
 	return (size_t)ntutils->ret_value;
 }
 
-static void *
-ntu_alloc_str_ex(const char *str, size_t alloc_len, size_t str_len)
+static void *ntu_alloc_str_ex(const char *str, size_t alloc_len, size_t str_len)
 {
-  if (str_len > alloc_len)
-    return NULL;
+	if (str_len > alloc_len)
+		return NULL;
 
-  void *addr = ntu_malloc(alloc_len);
+	void *addr = ntu_malloc(alloc_len);
 	if (addr == NULL)
 		return NULL;
 
@@ -449,41 +451,38 @@ ntu_alloc_str_ex(const char *str, size_t alloc_len, size_t str_len)
 	return addr;
 }
 
-void *
-ntu_alloc_str(const char *str)
+void *ntu_alloc_str(const char *str)
 {
 	size_t str_len = (strlen(str) + 1) * sizeof(*str);
-  return ntu_alloc_str_ex(str, str_len, str_len);
+	return ntu_alloc_str_ex(str, str_len, str_len);
 }
 
 nttunnel_t *ntu_nttunnel()
 {
-  ntutils_t *ntutils = ntu_get();
-  return NTU_NTTUNNEL_EX(ntutils);
+	ntutils_t *ntutils = ntu_get();
+	return NTU_NTTUNNEL_EX(ntutils);
 }
 
 bool ntu_tunnel_can_read()
 {
-  nttunnel_t *nttunnel = ntu_nttunnel();
-  return ntt_can_read(nttunnel);
+	nttunnel_t *nttunnel = ntu_nttunnel();
+	return ntt_can_read(nttunnel);
 }
 
 bool ntu_tunnel_can_write()
 {
-  nttunnel_t *nttunnel = ntu_nttunnel();
-  return ntt_can_write(nttunnel);
+	nttunnel_t *nttunnel = ntu_nttunnel();
+	return ntt_can_write(nttunnel);
 }
 
 nerror_t ntu_tunnel_read(const void *dest, void *source, size_t length)
 {
-  nttunnel_t *tunnel = ntu_nttunnel();
-  return ntt_read(tunnel, dest, source, length);
+	nttunnel_t *tunnel = ntu_nttunnel();
+	return ntt_read(tunnel, dest, source, length);
 }
 
 nerror_t ntu_tunnel_write(void *dest, const void *source, size_t length)
 {
-  nttunnel_t *tunnel = ntu_nttunnel();
-  return ntt_write(tunnel, dest, source, length);
+	nttunnel_t *tunnel = ntu_nttunnel();
+	return ntt_write(tunnel, dest, source, length);
 }
-
-

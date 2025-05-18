@@ -14,209 +14,213 @@
 
 void _ntt_delete_path(nttunnel_fschan_t *fschan)
 {
-  if (fschan->path != NULL) {
-    NFILE_DELETE(fschan->path);
-    N_FREE(fschan->path);
-  }
+	if (fschan->path != NULL) {
+		NFILE_DELETE(fschan->path);
+		N_FREE(fschan->path);
+	}
 }
 
 void *_ntt_create_path(ntmem_t *ntmem, nfile_path_t path)
 {
-  void *mem = NTM_LOCAL(ntmem);
-  size_t l = NFILE_PATH_GET_SIZE(path);
+	void *local = NTM_LOCAL(ntmem);
+	size_t l = NFILE_PATH_GET_SIZE(path);
 
-  memcpy(mem, path, l);
-  return mem;
+	memcpy(local, path, l);
+	return local;
 }
 
 void *_ntt_create_temp_path(ntmem_t *ntmem)
 {
-
 #ifdef __WIN32
 
-  void *mem = NTM_LOCAL(ntmem);
-	DWORD temp_path_len = GetTempPathW(MAX_PATH, (void *)mem);
+	void *local = NTM_LOCAL(ntmem);
+	DWORD temp_path_len = GetTempPathW(MAX_PATH, (void *)local);
 	if (temp_path_len <= 0)
 		return NULL;
 
-  UINT unum = GetTempFileNameW((void *)mem, NULL, 0, (void *)mem);
+	UINT unum = GetTempFileNameW((void *)local, NULL, 0, (void *)local);
 	if (unum == 0)
 		return NULL;
- 
+
 #endif /* ifdef __WIN32 */
 
-  return mem;
+	return local;
 }
 
-nerror_t _ntt_init_fschan(nttunnel_t *nttunnel, nttunnel_fschan_t *fschan, nttunnel_fschan_flags_t flags)
+nerror_t _ntt_init_fschan(nttunnel_t *nttunnel, nttunnel_fschan_t *fschan,
+			  nttunnel_fschan_flags_t flags)
 {
-  ntmem_t *ntmem = nttunnel->ntmem;
+	ntmem_t *ntmem = nttunnel->ntmem;
 
-  if ((flags & NTTUNNEL_FSCHAN_CREATE_TEMP_PATH) != 0) {
-    void *mem = _ntt_create_temp_path(ntmem);
-    if (mem == NULL)
-      return GET_ERR(NTTUNNEL_CREATE_TEMP_PATH_ERROR);
-  }
+	if ((flags & NTTUNNEL_FSCHAN_CREATE_TEMP_PATH) != 0) {
+		void *local = _ntt_create_temp_path(ntmem);
+		if (local == NULL)
+			return GET_ERR(NTTUNNEL_CREATE_TEMP_PATH_ERROR);
+	}
 
 #ifdef __WIN32
 
-  static const wchar_t mode_read[] = L"rb";
-  static const wchar_t mode_write[] = L"wb";
- 
+	static const wchar_t mode_read[] = L"rb";
+	static const wchar_t mode_write[] = L"wb";
+
 #endif /* ifdef __WIN32 */
 
-  int8_t mode_len;
-  void *mode;
-  bool read = (flags & NTTUNNEL_FSCHAN_WRITE_MODE) == 0;
-  if (read) {
-    mode = (void*) mode_write;
-    mode_len = sizeof(mode_write);
-  } else {
-    mode = (void*) mode_read;
-    mode_len = sizeof(mode_read);
-  }
-  
-  void *mem = NTM_LOCAL(ntmem);
-  size_t temp_path_size = NFILE_PATH_GET_SIZE(mem);
-  memcpy(mem + temp_path_size, mode, mode_len);
+	int8_t mode_len;
+	void *mode;
+	bool read = (flags & NTTUNNEL_FSCHAN_WRITE_MODE) == 0;
+	if (read) {
+		mode = (void *)mode_write;
+		mode_len = sizeof(mode_write);
+	} else {
+		mode = (void *)mode_read;
+		mode_len = sizeof(mode_read);
+	}
 
-  bool save_path = (flags & NTTUNNEL_FSCHAN_DONT_SAVE_PATH) == 0;
-  if (save_path) {
-    fschan->path = N_ALLOC(temp_path_size);
-    if (fschan->path == NULL)
-      return GET_ERR(NTTUNNEL_ALLOC_ERROR);
+	void *local = NTM_LOCAL(ntmem);
+	size_t temp_path_size = NFILE_PATH_GET_SIZE(local);
+	memcpy(local + temp_path_size, mode, mode_len);
 
-    memcpy(fschan->path, mem, temp_path_size);
-  } else
-    fschan->path = NULL;
+	bool save_path = (flags & NTTUNNEL_FSCHAN_DONT_SAVE_PATH) == 0;
+	if (save_path) {
+		fschan->path = N_ALLOC(temp_path_size);
+		if (fschan->path == NULL)
+			return GET_ERR(NTTUNNEL_ALLOC_ERROR);
+
+		memcpy(fschan->path, local, temp_path_size);
+	} else
+		fschan->path = NULL;
 
 #ifdef LOG_LEVEL_3
 #ifdef __WIN32
-  LOG_INFO("ntt_fschan_init(path=%ls, mode=%ls, flags(%02x)", mem, mem + temp_path_size, flags);
+	LOG_INFO("ntt_fschan_init(path=%ls, mode=%ls, flags(%02x)", local,
+		 local + temp_path_size, flags);
 #endif /* ifdef __WIN32 */
 #endif /* ifdef LOG_LEVEL_3 */
 
-  if (read)
-    fschan->local_file = nfile_open_r(mem);
-  else
-    fschan->local_file = nfile_open_w(mem);
+	if (read)
+		fschan->local_file = nfile_open_r(local);
+	else
+		fschan->local_file = nfile_open_w(local);
 
-  if (fschan->local_file == NULL)
-    return GET_ERR(NTTUNNEL_NFILE_OPEN_ERROR);
+	if (fschan->local_file == NULL)
+		return GET_ERR(NTTUNNEL_NFILE_OPEN_ERROR);
 
-  void *tmem = ntm_push(ntmem, nttunnel);
-  if (tmem == NULL)
-    return GET_ERR(NTTUNNEL_NTM_PUSH_MEMSET_ERROR);
+	void *remote = ntm_push(ntmem, nttunnel);
+	if (remote == NULL)
+		return GET_ERR(NTTUNNEL_NTM_PUSH_MEMSET_ERROR);
 
-  fschan->remote_file = ntu_fopen(tmem, tmem + temp_path_size);
-  if (fschan->remote_file == NULL)
-    return GET_ERR(NTTUNNEL_NTU_FOPEN_ERROR);
+	fschan->remote_file = ntu_fopen(remote, remote + temp_path_size);
+	if (fschan->remote_file == NULL)
+		return GET_ERR(NTTUNNEL_NTU_FOPEN_ERROR);
 
-  return N_OK;
+	return N_OK;
 }
 
 void _ntt_destroy_fschan(nttunnel_fschan_t *fschan)
 {
-  if (fschan == NULL)
-    return;
+	if (fschan == NULL)
+		return;
 
-  if (fschan->remote_file != NULL) {
-    ntu_fclose(fschan->remote_file);
-    fschan->remote_file = NULL;
-  }
+	if (fschan->remote_file != NULL) {
+		ntu_fclose(fschan->remote_file);
+		fschan->remote_file = NULL;
+	}
 
-  if (fschan->local_file != NULL) {
-    NFILE_CLOSE(fschan->local_file);
-    fschan->local_file = NULL;
-  }
+	if (fschan->local_file != NULL) {
+		NFILE_CLOSE(fschan->local_file);
+		fschan->local_file = NULL;
+	}
 
-  _ntt_delete_path(fschan);
+	_ntt_delete_path(fschan);
 }
 
 bool ntt_can_read(nttunnel_t *nttunnel)
 {
-  if (nttunnel == NULL)
-    return false;
+	if (nttunnel == NULL)
+		return false;
 
-  return nttunnel->read.remote_file != NULL;
+	return nttunnel->read.remote_file != NULL;
 }
 
 bool ntt_can_write(nttunnel_t *nttunnel)
 {
-  if (nttunnel == NULL)
-    return false;
+	if (nttunnel == NULL)
+		return false;
 
-  return nttunnel->write.remote_file != NULL;
+	return nttunnel->write.remote_file != NULL;
 }
 
 nerror_t ntt_init_ex(nttunnel_t *nttunnel, nttunnel_fschan_flags_t flags)
 {
-
 #ifdef LOG_LEVEL_2
-  LOG_INFO("ntt_init_ex(nttunnel=%p, flags=%02x)", nttunnel, flags);
+	LOG_INFO("ntt_init_ex(nttunnel=%p, flags=%02x)", nttunnel, flags);
 #endif /* ifdef LOG_LEVEL_2 */
 
-  memset(nttunnel, 0, sizeof(nttunnel_t));
+	memset(nttunnel, 0, sizeof(nttunnel_t));
 
-  nttunnel->ntmem = ntm_create_ex(NFILE_MAX_PATH_SIZE + NTTUNNEL_FSCHAN_MAX_MODE_SIZE);
-  if (nttunnel->ntmem == NULL)
-    return GET_ERR(NTTUNNEL_NTM_CREATE_ERROR); 
+	nttunnel->ntmem = ntm_create_ex(NFILE_MAX_PATH_SIZE +
+					NTTUNNEL_FSCHAN_MAX_MODE_SIZE);
+	if (nttunnel->ntmem == NULL)
+		return GET_ERR(NTTUNNEL_NTM_CREATE_ERROR);
 
-  nttunnel->max_transfer = NTTUNNEL_FSCHAN_CALC_MAX_TRANSFER(flags);
+	nttunnel->max_transfer = NTTUNNEL_FSCHAN_CALC_MAX_TRANSFER(flags);
 
-  if (HAS_ERR(_ntt_init_fschan(nttunnel, &nttunnel->write, flags | NTTUNNEL_FSCHAN_WRITE_MODE)))
-    goto ntt_init_ex_init_fschan_error;
+	if (HAS_ERR(_ntt_init_fschan(nttunnel, &nttunnel->write,
+				     flags | NTTUNNEL_FSCHAN_WRITE_MODE)))
+		goto ntt_init_ex_init_fschan_error;
 
-  if (HAS_ERR(_ntt_init_fschan(nttunnel, &nttunnel->read, flags))) {
-  ntt_init_ex_init_fschan_error:
-    ntt_destroy(nttunnel);
-    return GET_ERR(NTTUNNEL_INIT_FSCHAN_ERROR);
-  }
- 
-  return N_OK;
+	if (HAS_ERR(_ntt_init_fschan(nttunnel, &nttunnel->read, flags))) {
+ntt_init_ex_init_fschan_error:
+		ntt_destroy(nttunnel);
+		return GET_ERR(NTTUNNEL_INIT_FSCHAN_ERROR);
+	}
+
+	return N_OK;
 }
 
 nerror_t ntt_init(nttunnel_t *nttunnel)
 {
-  return ntt_init_ex(nttunnel, NTTUNNEL_FSCHAN_DEFAULT_FLAGS);
+	return ntt_init_ex(nttunnel, NTTUNNEL_FSCHAN_DEFAULT_FLAGS);
 }
 
 void ntt_destroy(nttunnel_t *nttunnel)
 {
-  if (nttunnel == NULL)
-    return;
+	if (nttunnel == NULL)
+		return;
 
-  if (nttunnel->ntmem != NULL) {
-    ntm_delete(nttunnel->ntmem);
-    nttunnel->ntmem = NULL;
-  }
+	if (nttunnel->ntmem != NULL) {
+		ntm_delete(nttunnel->ntmem);
+		nttunnel->ntmem = NULL;
+	}
 
-  if (ntt_can_read(nttunnel))
-    _ntt_destroy_fschan(&nttunnel->read);
+	if (ntt_can_read(nttunnel))
+		_ntt_destroy_fschan(&nttunnel->read);
 
-  if (ntt_can_write(nttunnel))
-    _ntt_destroy_fschan(&nttunnel->write);
+	if (ntt_can_write(nttunnel))
+		_ntt_destroy_fschan(&nttunnel->write);
 }
 
-nerror_t _ntt_fschan_read(nttunnel_fschan_t *fschan, const void *dest, void *source, size_t length)
+nerror_t _ntt_fschan_read(nttunnel_fschan_t *fschan, const void *dest,
+			  void *source, size_t length)
 {
-  size_t len_1 = ntu_fwrite(dest, 1, length, fschan->remote_file); 
+	size_t len_1 = ntu_fwrite(dest, 1, length, fschan->remote_file);
 	if (len_1 != length)
 		return GET_ERR(NTTUNNEL_NFILE_READ_ERROR);
 
 	if (ntu_fflush(fschan->remote_file))
 		return GET_ERR(NTTUNNEL_NTU_FFLUSH_ERROR);
 
-  size_t len_2 = NFILE_READ(fschan->local_file, source, length); 
+	size_t len_2 = NFILE_READ(fschan->local_file, source, length);
 	if (len_2 != length)
 		return GET_ERR(NTTUNNEL_NTU_FWRITE_ERROR);
 
-  return N_OK;
+	return N_OK;
 }
 
-nerror_t _ntt_fschan_write(nttunnel_fschan_t *fschan, void *dest, const void *source, size_t length)
+nerror_t _ntt_fschan_write(nttunnel_fschan_t *fschan, void *dest,
+			   const void *source, size_t length)
 {
-  size_t len_1 = NFILE_WRITE(fschan->local_file, source, length); 
+	size_t len_1 = NFILE_WRITE(fschan->local_file, source, length);
 	if (len_1 != length)
 		return GET_ERR(NTTUNNEL_NFILE_WRITE_ERROR);
 
@@ -226,65 +230,71 @@ nerror_t _ntt_fschan_write(nttunnel_fschan_t *fschan, void *dest, const void *so
 	if (len_2 != length)
 		return GET_ERR(NTTUNNEL_NTU_FREAD_ERROR);
 
-  return N_OK;
+	return N_OK;
 }
 
-nerror_t _ntt_fschan_reset(nttunnel_t *nttunnel, nttunnel_fschan_t *fschan, nttunnel_fschan_flags_t flags)
+nerror_t _ntt_fschan_reset(nttunnel_t *nttunnel, nttunnel_fschan_t *fschan,
+			   nttunnel_fschan_flags_t flags)
 {
-  nfile_path_t path = fschan->path;
-  bool has_path = path != NULL;
-  if ((flags & NTTUNNEL_FSCHAN_CREATE_TEMP_PATH) != 0) {
-    nttunnel_fschan_t new_fschan;
-    if (HAS_ERR(_ntt_init_fschan(nttunnel, &new_fschan, flags)))
-      return GET_ERR(NTTUNNEL_INIT_FSCHAN_ERROR);
+	nfile_path_t path = fschan->path;
+	bool has_path = path != NULL;
+	if ((flags & NTTUNNEL_FSCHAN_CREATE_TEMP_PATH) != 0) {
+		nttunnel_fschan_t new_fschan;
+		if (HAS_ERR(_ntt_init_fschan(nttunnel, &new_fschan, flags)))
+			return GET_ERR(NTTUNNEL_INIT_FSCHAN_ERROR);
 
-    _ntt_destroy_fschan(fschan);
-    memcpy(fschan, &new_fschan, sizeof(nttunnel_fschan_t));
-  } else {
-    if (has_path)
-      _ntt_create_path(nttunnel->ntmem, path);
-    else {
-      flags |= NTTUNNEL_FSCHAN_CREATE_TEMP_PATH;
-      flags |= NTTUNNEL_FSCHAN_DONT_SAVE_PATH;
-    }
+		_ntt_destroy_fschan(fschan);
+		memcpy(fschan, &new_fschan, sizeof(nttunnel_fschan_t));
+	} else {
+		if (has_path)
+			_ntt_create_path(nttunnel->ntmem, path);
+		else {
+			flags |= NTTUNNEL_FSCHAN_CREATE_TEMP_PATH;
+			flags |= NTTUNNEL_FSCHAN_DONT_SAVE_PATH;
+		}
 
-    _ntt_destroy_fschan(fschan);
-    if (HAS_ERR(_ntt_init_fschan(nttunnel, fschan, flags)))
-      return GET_ERR(NTTUNNEL_INIT_FSCHAN_ERROR);
-  }
+		_ntt_destroy_fschan(fschan);
+		if (HAS_ERR(_ntt_init_fschan(nttunnel, fschan, flags)))
+			return GET_ERR(NTTUNNEL_INIT_FSCHAN_ERROR);
+	}
 
-  return N_OK;
+	return N_OK;
 }
 
-nerror_t ntt_read(nttunnel_t *nttunnel, const void *dest, void *source, size_t length)
+nerror_t ntt_read(nttunnel_t *nttunnel, const void *dest, void *source,
+		  size_t length)
 {
-  nerror_t ret = _ntt_fschan_read(&nttunnel->read, dest, source, length);
-  if (HAS_ERR(ret))
-    goto ntt_read_return;
+	nerror_t ret = _ntt_fschan_read(&nttunnel->read, dest, source, length);
+	if (HAS_ERR(ret))
+		goto ntt_read_return;
 
-  nttunnel->read_transfer += length;
-  if (nttunnel->read_transfer >= nttunnel->max_transfer) {
-    nttunnel->read_transfer = 0;
-    ret = _ntt_fschan_reset(nttunnel, &nttunnel->read, NTTUNNEL_FSCHAN_CREATE_TEMP_PATH);
-  }
+	nttunnel->read_transfer += length;
+	if (nttunnel->read_transfer >= nttunnel->max_transfer) {
+		nttunnel->read_transfer = 0;
+		ret = _ntt_fschan_reset(nttunnel, &nttunnel->read,
+					NTTUNNEL_FSCHAN_CREATE_TEMP_PATH);
+	}
 
 ntt_read_return:
-  return ret;
+	return ret;
 }
 
-nerror_t ntt_write(nttunnel_t *nttunnel, void *dest, const void *source, size_t length)
+nerror_t ntt_write(nttunnel_t *nttunnel, void *dest, const void *source,
+		   size_t length)
 {
-  nerror_t ret = _ntt_fschan_write(&nttunnel->write, dest, source, length);
-  if (HAS_ERR(ret))
-    goto ntt_write_return;
+	nerror_t ret =
+		_ntt_fschan_write(&nttunnel->write, dest, source, length);
+	if (HAS_ERR(ret))
+		goto ntt_write_return;
 
-  nttunnel->write_transfer += length;
-  if (nttunnel->write_transfer >= nttunnel->max_transfer) {
-    nttunnel->write_transfer = 0;
-    ret = _ntt_fschan_reset(nttunnel, &nttunnel->write, NTTUNNEL_FSCHAN_CREATE_TEMP_PATH | NTTUNNEL_FSCHAN_WRITE_MODE);
-  }
+	nttunnel->write_transfer += length;
+	if (nttunnel->write_transfer >= nttunnel->max_transfer) {
+		nttunnel->write_transfer = 0;
+		ret = _ntt_fschan_reset(nttunnel, &nttunnel->write,
+					NTTUNNEL_FSCHAN_CREATE_TEMP_PATH |
+						NTTUNNEL_FSCHAN_WRITE_MODE);
+	}
 
 ntt_write_return:
-  return ret;
+	return ret;
 }
-

@@ -24,17 +24,17 @@
 
 #include "neptune.h"
 
-#define NTMEM_SAFE_WRITE 0x01
+#define NTMEM_SAFE_WRITE 0x10
 
-typedef int8_t nmem_flags_t; 
+typedef int8_t nmem_flags_t;
 
 typedef struct nttunnel nttunnel_t;
 
 struct ntmem {
-  nmem_flags_t flags;
+	nmem_flags_t flags;
 
-  size_t length;
-  void *remote_mem;
+	size_t length;
+	void *remote_mem;
 };
 
 #define NTM_LENGTH(ntmem) (ntmem->length)
@@ -42,12 +42,14 @@ struct ntmem {
 
 #define NTM_CALC_LOCAL_SIZE(length) (length * 2 * sizeof(int8_t))
 #define NTM_LOCAL_SIZE(ntmem) (NTM_CALC_LOCAL_SIZE(ntmem->length))
-#define NTM_CALC_STRUCT_SIZE(length) (sizeof(ntmem_t) + NTM_CALC_LOCAL_SIZE(length))
+#define NTM_CALC_STRUCT_SIZE(length) \
+	(sizeof(ntmem_t) + NTM_CALC_LOCAL_SIZE(length))
 #define NTM_STRUCT_SIZE(ntmem) (NTM_CALC_STRUCT_SIZE(ntmem->length))
 
-#define NTM_SET_REMOTE(ntmem, set_remote_mem) (ntmem->remote_mem = (set_remote_mem))
+#define NTM_SET_REMOTE(ntmem, set_remote_mem) \
+	(ntmem->remote_mem = (set_remote_mem))
 #define NTM_REMOTE(ntmem) (ntmem->remote_mem)
-#define NTM_LOCAL(ntmem) ((void*) (ntmem + 1))
+#define NTM_LOCAL(ntmem) ((void *)(ntmem + 1))
 #define NTM_LOCAL_CPY(ntmem) (NTM_LOCAL(ntmem) + NTM_LENGTH(ntmem))
 
 typedef struct ntmem ntmem_t;
@@ -60,7 +62,6 @@ typedef struct ntmem ntmem_t;
 #define NTMEM_PUSH_WITH_MEMSET_ERROR 0x9205
 
 #include "ntutils.h"
-
 
 /**
  * @brief Enable safe write mode for memory synchronization.
@@ -123,7 +124,6 @@ ntmem_t *ntm_create();
  */
 void ntm_delete(ntmem_t *ntmem);
 
-
 /**
  * @brief Delete the ntmem structure and detach remote memory pointer.
  *
@@ -137,7 +137,6 @@ void ntm_delete(ntmem_t *ntmem);
  * @return Pointer to remote memory address in target process.
  */
 void *ntm_delete_and_detach(ntmem_t *ntmem);
-
 
 /**
  * @brief Pull data from tunnel into the memory buffer.
@@ -174,6 +173,4 @@ void *ntm_push_with_memset(ntmem_t *ntmem);
  */
 void *ntm_push(ntmem_t *ntmem, nttunnel_t *nttunnel);
 
-
 #endif // !__NTUTILS_BUFFER_H__
-

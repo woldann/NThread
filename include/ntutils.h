@@ -80,7 +80,7 @@ struct ntutils {
 	void *ret_value;
 	ntucc_t sel_cc;
 
-  nttunnel_t nttunnel;
+	nttunnel_t nttunnel;
 
 #ifdef __WIN32
 
@@ -116,7 +116,9 @@ ntutils_t *_ntu_o(ntucc_t cc);
 
 #else // NTU_GLOBAL_CC
 
-#define ntu_set_cc(cc) do {} while(0)
+#define ntu_set_cc(cc) \
+	do {           \
+	} while (0)
 #define ntu_o(cc) ntu_get()
 
 #endif // NTU_GLOBAL_CC
@@ -158,7 +160,7 @@ void ntu_destroy();
  * @return Error code.
  */
 nerror_t ntu_call_v(ntutils_t *ntutils, void *func_addr, uint8_t arg_count,
-                    va_list args);
+		    va_list args);
 
 /**
  * @brief Call a function inside the target thread with variadic arguments.
@@ -169,7 +171,8 @@ nerror_t ntu_call_v(ntutils_t *ntutils, void *func_addr, uint8_t arg_count,
  * @param ... Arguments to be passed to the function.
  * @return Error code.
  */
-nerror_t ntu_call(ntutils_t *ntutils, void *function_address, uint8_t arg_count, ...);
+nerror_t ntu_call(ntutils_t *ntutils, void *function_address, uint8_t arg_count,
+		  ...);
 
 /**
  * @brief Call a function with variable arguments and retrieve a return value.
@@ -282,8 +285,8 @@ void *ntu_alloc_str(const char *str);
  * @param last_dest Pointer to the last written destination byte (optional).
  * @return Error code.
  */
-nerror_t ntu_write_with_memset_ex(void *dest, const void *source, size_t length, const void *last_dest);
-
+nerror_t ntu_write_with_memset_ex(void *dest, const void *source, size_t length,
+				  const void *last_dest);
 
 /**
  * @brief Write data to remote memory using memset-based operations.

@@ -140,7 +140,6 @@ ntid_t nthread_get_id(nthread_t *nthread);
 #define NTHREAD_SET_OREG(nthread, reg, set) \
 	(((void **)(((void *)&nthread->o_ctx) + reg))[0] = (void *)set)
 
-
 /**
  * @brief Initialize an NThread instance with the given thread ID and control parameters.
  *
@@ -240,6 +239,5 @@ nerror_t nthread_wait(nthread_t *nthread);
  */
 nerror_t nthread_call(nthread_t *nthread, void *function_address,
 		      void **return_value);
-
 
 #endif // !__NSHELL_H__
