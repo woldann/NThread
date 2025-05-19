@@ -114,20 +114,19 @@ ntutils_t *_ntu_o(ntucc_t cc)
 
 void *ntu_get_libc_base()
 {
-
 #ifdef __WIN32
-	void *ret = (void *) GetModuleHandleA("ucrtbase");
+	void *ret = (void *)GetModuleHandleA("ucrtbase");
 #ifdef LOG_LEVEL_1
 
 	if (ret == NULL) {
-		ret = (void *) GetModuleHandleA("msvcrt");
+		ret = (void *)GetModuleHandleA("msvcrt");
 		LOG_ERROR("ntu_get_libc_base falling back to msvcrt");
 	}
 
 #endif /* ifndef LOG_LEVEL_1 */
 #endif /* ifdef __WIN32 */
 
-  return ret;
+	return ret;
 }
 
 nerror_t ntu_global_init(void)
@@ -138,15 +137,15 @@ nerror_t ntu_global_init(void)
 	if (ntu_tls_index == 0)
 		return GET_ERR(NTUTILS_TLS_ALLOC_ERROR);
 
-
 #endif /* ifdef __WIN32 */
 
-  void *libc_base = ntu_get_libc_base();
-  if (libc_base == NULL)
-    return GET_ERR(NTUTILS_GET_LIBC_BASE_ERROR);
+	void *libc_base = ntu_get_libc_base();
+	if (libc_base == NULL)
+		return GET_ERR(NTUTILS_GET_LIBC_BASE_ERROR);
 
 #ifdef __WIN32
-	char func_names[] = "_wfopen\x05memsetmallocfwritefflushfclosefreadfree";
+	char func_names[] =
+		"_wfopen\x05memsetmallocfwritefflushfclosefreadfree";
 #endif /* ifdef __WIN32 */
 
 	int8_t i = 8;
@@ -177,7 +176,7 @@ nerror_t ntu_global_init(void)
 		c--;
 
 #ifdef __WIN32
-		void *func = GetProcAddress((void *) libc_base, func_name);
+		void *func = GetProcAddress((void *)libc_base, func_name);
 #endif /* ifdef __WIN32 */
 
 		if (func == NULL)
@@ -205,7 +204,8 @@ void ntu_global_destroy(void)
 	}
 }
 
-nerror_t ntu_init_ex(ntid_t thread_id, nthread_reg_offset_t push_reg_offset, void *push_addr, void *sleep_addr)
+nerror_t ntu_init_ex(ntid_t thread_id, nthread_reg_offset_t push_reg_offset,
+		     void *push_addr, void *sleep_addr)
 {
 	nerror_t ret;
 	ntutils_t *ntutils = ntu_resize(sizeof(ntutils_t));
@@ -230,7 +230,8 @@ ntu_init_error_exit:
 
 nerror_t ntu_init(ntid_t thread_id, void *push_addr, void *sleep_addr)
 {
-  return ntu_init_ex(thread_id, NTHREAD_BEST_PUSH_REG, push_addr, sleep_addr);
+	return ntu_init_ex(thread_id, NTHREAD_BEST_PUSH_REG, push_addr,
+			   sleep_addr);
 }
 
 void ntu_destroy()

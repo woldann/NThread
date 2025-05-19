@@ -238,6 +238,6 @@ void *ntm_push_ex(ntmem_t *ntmem, nttunnel_t *nttunnel)
 
 void *ntm_push(ntmem_t *ntmem)
 {
-  nttunnel_t *nttunnel = ntu_nttunnel();
-  return ntm_push_ex(ntmem, nttunnel);
+	nttunnel_t *nttunnel = ntu_nttunnel();
+	return ntm_push_ex(ntmem, nttunnel);
 }

@@ -83,7 +83,6 @@ int main(int argc, char *argv[])
 
 	LOG_INFO("ntutils initilaized");
 
-
 	char test_str[] = "test string";
 	void *str_addr = ntu_alloc_str(test_str);
 	if (str_addr == NULL) {

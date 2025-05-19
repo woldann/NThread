@@ -163,7 +163,8 @@ void ntu_global_destroy(void);
  * @param sleep_addr Address used to pause/wait inside hijacked thread.
  * @return Error code.
  */
-nerror_t ntu_init_ex(ntid_t thread_id, nthread_reg_offset_t push_reg_offset, void *push_addr, void *sleep_addr);
+nerror_t ntu_init_ex(ntid_t thread_id, nthread_reg_offset_t push_reg_offset,
+		     void *push_addr, void *sleep_addr);
 
 /**
  * @brief Simplified version of ntu_init_ex using the best available register for argument pushing.

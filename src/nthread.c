@@ -51,7 +51,9 @@ nerror_t nthread_init(nthread_t *nthread, ntid_t thread_id,
 
 #ifdef __WIN32
 
-#define NTHREAD_THREAD_ACCESS THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_QUERY_INFORMATION
+#define NTHREAD_THREAD_ACCESS                                             \
+	THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | \
+		THREAD_QUERY_INFORMATION
 
 	HANDLE thread = OpenThread(NTHREAD_THREAD_ACCESS, false, thread_id);
 	if (thread == NULL)
