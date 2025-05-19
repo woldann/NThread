@@ -1,9 +1,25 @@
 /**
- * Copyright (C) 2024, 2025 Serkan Aksoy
- * All rights reserved.
+ * MIT License
  *
- * This file is part of the NThread project.
- * It may not be copied or distributed without permission.
+ * Copyright (c) 2024, 2025 Sekran Aksoy
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 #include "neptune.h"
@@ -29,6 +45,7 @@ int main(int argc, char *argv[])
 	scanf("%ld", &tid);
 
 #ifdef __WIN32
+
 	HANDLE thread = OpenThread(THREAD_ALL_ACCESS, FALSE, tid);
 	if (thread == NULL) {
 		LOG_ERROR("Thread not found");
@@ -59,12 +76,13 @@ int main(int argc, char *argv[])
 		return 0x33;
 	}
 
+#endif /* ifdef __WIN32 */
+
 	LOG_INFO("%lld bytes writed to %ld", write_len, pid);
 	RET_ERR(ntu_init(tid, push_sleep_addr, push_sleep_addr + 2));
 
 	LOG_INFO("ntutils initilaized");
 
-#endif /* ifdef __WIN32 */
 
 	char test_str[] = "test string";
 	void *str_addr = ntu_alloc_str(test_str);

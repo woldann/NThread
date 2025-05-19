@@ -1,9 +1,25 @@
 /**
- * Copyright (C) 2024, 2025 Serkan Aksoy
- * All rights reserved.
+ * MIT License
  *
- * This file is part of the NThread project.
- * It may not be copied or distributed without permission.
+ * Copyright (c) 2024, 2025 Sekran Aksoy
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 #include "nthread.h"
@@ -35,7 +51,9 @@ nerror_t nthread_init(nthread_t *nthread, ntid_t thread_id,
 
 #ifdef __WIN32
 
-	HANDLE thread = OpenThread(THREAD_ALL_ACCESS, false, thread_id);
+#define NTHREAD_THREAD_ACCESS THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_QUERY_INFORMATION
+
+	HANDLE thread = OpenThread(NTHREAD_THREAD_ACCESS, false, thread_id);
 	if (thread == NULL)
 		return GET_ERR(NTHREAD_OPEN_THREAD_ERROR);
 
@@ -143,6 +161,7 @@ nerror_t nthread_suspend(nthread_t *nthread)
 	if (count == (DWORD)(-1)) {
 		LOG_WARN("nthread_suspend(nthread_id=%ld) failed",
 			 NTHREAD_GET_ID(nthread));
+
 		return GET_ERR(NTHREAD_SUSPEND_ERROR);
 	}
 
@@ -172,6 +191,7 @@ nerror_t nthread_resume(nthread_t *nthread)
 	if (count == (DWORD)(-1)) {
 		LOG_WARN("nthread_resume(nthread_id=%ld) failed",
 			 NTHREAD_GET_ID(nthread));
+
 		return GET_ERR(NTHREAD_RESUME_ERROR);
 	}
 

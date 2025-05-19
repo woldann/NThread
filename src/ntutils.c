@@ -1,9 +1,25 @@
 /**
- * Copyright (C) 2024, 2025 Sekran Aksoy
- * All rights reserved.
+ * MIT License
  *
- * This file is part of the NThread project.
- * It may not be copied or distributed without permission.
+ * Copyright (c) 2024, 2025 Sekran Aksoy
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 #include "ntutils.h"
@@ -96,6 +112,24 @@ ntutils_t *_ntu_o(ntucc_t cc)
 
 #endif // !NTU_GLOBAL_CC
 
+void *ntu_get_libc_base()
+{
+
+#ifdef __WIN32
+	void *ret = (void *) GetModuleHandleA("ucrtbase");
+#ifdef LOG_LEVEL_1
+
+	if (ret == NULL) {
+		ret = (void *) GetModuleHandleA("msvcrt");
+		LOG_ERROR("ntu_get_libc_base falling back to msvcrt");
+	}
+
+#endif /* ifndef LOG_LEVEL_1 */
+#endif /* ifdef __WIN32 */
+
+  return ret;
+}
+
 nerror_t ntu_global_init(void)
 {
 #ifdef __WIN32
@@ -104,37 +138,27 @@ nerror_t ntu_global_init(void)
 	if (ntu_tls_index == 0)
 		return GET_ERR(NTUTILS_TLS_ALLOC_ERROR);
 
-	HANDLE libc_module = GetModuleHandleA("ucrtbase");
 
 #endif /* ifdef __WIN32 */
 
-	if (libc_module == NULL) {
-#ifdef LOG_LEVEL_1
-
-		libc_module = GetModuleHandleA("msvcrt");
-		LOG_ERROR("ntutils falling back to msvcrt");
-		if (libc_module == NULL)
-			return GET_ERR(NTUTILS_ERROR_GET_LIBC);
-
-#else /* ifndef LOG_LEVEL_1 */
-		return GET_ERR(NTUTILS_ERROR_GET_LIBC);
-#endif /* ifndef LOG_LEVEL_1 */
-	}
+  void *libc_base = ntu_get_libc_base();
+  if (libc_base == NULL)
+    return GET_ERR(NTUTILS_GET_LIBC_BASE_ERROR);
 
 #ifdef __WIN32
-	char fun_names[] = "_wfopen\x05memsetmallocfwritefflushfclosefreadfree";
+	char func_names[] = "_wfopen\x05memsetmallocfwritefflushfclosefreadfree";
 #endif /* ifdef __WIN32 */
 
 	int8_t i = 8;
 	int8_t pos = 0;
 	int8_t c = 0;
-	int8_t fun_pos = 0;
+	int8_t func_pos = 0;
 
-	char fun_name[i];
+	char func_name[i];
 
 	while (true) {
 		if (c == 0) {
-			char fc = (char)fun_names[pos];
+			char fc = (char)func_names[pos];
 			if (fc == 0)
 				break;
 
@@ -145,23 +169,26 @@ nerror_t ntu_global_init(void)
 				c = 1;
 
 			i--;
-			fun_name[i] = 0;
+			func_name[i] = 0;
 		}
 
-		memcpy(fun_name, fun_names + pos, i);
+		memcpy(func_name, func_names + pos, i);
 		pos += i;
 		c--;
 
-		void *fun = GetProcAddress(libc_module, fun_name);
-		if (fun == NULL)
-			return GET_ERR(NTUTILS_FUNC_INIT_ERROR + fun_pos);
+#ifdef __WIN32
+		void *func = GetProcAddress((void *) libc_base, func_name);
+#endif /* ifdef __WIN32 */
+
+		if (func == NULL)
+			return GET_ERR(NTUTILS_FUNC_INIT_ERROR + func_pos);
 
 #ifdef LOG_LEVEL_3
-		LOG_INFO("ntutils function(%s): %p", fun_name, fun);
+		LOG_INFO("ntutils function(%s): %p", func_name, func);
 #endif /* ifdef LOG_LEVEL_3 */
 
-		((void **)&ntu_funcs)[fun_pos] = fun;
-		fun_pos++;
+		((void **)&ntu_funcs)[func_pos] = func;
+		func_pos++;
 	}
 
 	return N_OK;
@@ -178,7 +205,7 @@ void ntu_global_destroy(void)
 	}
 }
 
-nerror_t ntu_init(ntid_t thread_id, void *push_addr, void *sleep_addr)
+nerror_t ntu_init_ex(ntid_t thread_id, nthread_reg_offset_t push_reg_offset, void *push_addr, void *sleep_addr)
 {
 	nerror_t ret;
 	ntutils_t *ntutils = ntu_resize(sizeof(ntutils_t));
@@ -187,7 +214,7 @@ nerror_t ntu_init(ntid_t thread_id, void *push_addr, void *sleep_addr)
 	ntu_set_cc_ex(ntutils, NTU_DEFAULT_CC);
 
 	ntutils->nthread.thread = NULL;
-	ret = nthread_init(&ntutils->nthread, thread_id, NTHREAD_BEST_PUSH_REG,
+	ret = nthread_init(&ntutils->nthread, thread_id, push_reg_offset,
 			   push_addr, sleep_addr);
 
 	if (HAS_ERR(ret))
@@ -199,6 +226,11 @@ ntu_init_error_exit:
 		ntu_destroy();
 
 	return ret;
+}
+
+nerror_t ntu_init(ntid_t thread_id, void *push_addr, void *sleep_addr)
+{
+  return ntu_init_ex(thread_id, NTHREAD_BEST_PUSH_REG, push_addr, sleep_addr);
 }
 
 void ntu_destroy()

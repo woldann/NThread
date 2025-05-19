@@ -1,9 +1,25 @@
 /**
- * Copyright (C) 2024, 2025 Serkan Aksoy
- * All rights reserved.
+ * MIT License
  *
- * This file is part of the NThread project.
- * It may not be copied or distributed without permission.
+ * Copyright (c) 2024, 2025 Sekran Aksoy
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 /**
@@ -37,7 +53,7 @@
 
 #define NTUTILS_ERROR 0x7340
 
-#define NTUTILS_ERROR_GET_LIBC 0x7341
+#define NTUTILS_GET_LIBC_BASE_ERROR 0x7341
 #define NTUTILS_GET_TEMP_PATH_ERROR 0x7342
 #define NTUTILS_GET_TEMP_FILE_ERROR 0x7343
 #define NTUTILS_UNKNOWN_CC_ERROR 0x7344
@@ -123,6 +139,8 @@ ntutils_t *_ntu_o(ntucc_t cc);
 
 #endif // NTU_GLOBAL_CC
 
+void *ntu_get_libc_base();
+
 /**
  * @brief Initialize global state for ntutils subsystem.
  * 
@@ -138,6 +156,20 @@ void ntu_global_destroy(void);
 /**
  * @brief Initialize an ntutils instance for a target thread with required context.
  * 
+ * @param thread_id ID of the target thread.
+ * @param push_reg_offset Register offset to be used for pushing data to the stack.
+ *        Determines which register will hold the `push_addr` value.
+ * @param push_addr Address used during argument pushing for calls.
+ * @param sleep_addr Address used to pause/wait inside hijacked thread.
+ * @return Error code.
+ */
+nerror_t ntu_init_ex(ntid_t thread_id, nthread_reg_offset_t push_reg_offset, void *push_addr, void *sleep_addr);
+
+/**
+ * @brief Simplified version of ntu_init_ex using the best available register for argument pushing.
+ * 
+ * Internally calls `ntu_init_ex` with `NTHREAD_BEST_PUSH_REG` as the push register offset.
+ *
  * @param thread_id ID of the target thread.
  * @param push_addr Address used during argument pushing for calls.
  * @param sleep_addr Address used to pause/wait inside hijacked thread.

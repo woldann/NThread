@@ -1,9 +1,25 @@
 /**
- * Copyright (C) 2025 Serkan Aksoy
- * All rights reserved.
+ * MIT License
  *
- * This file is part of the NThread project.
- * It may not be copied or distributed without permission.
+ * Copyright (c) 2025 Sekran Aksoy
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 #include "ntmem.h"
@@ -187,7 +203,7 @@ size_t _find_diff(void *mem1, void *mem2, size_t len)
 	return len;
 }
 
-void *ntm_push(ntmem_t *ntmem, nttunnel_t *nttunnel)
+void *ntm_push_ex(ntmem_t *ntmem, nttunnel_t *nttunnel)
 {
 	void *remote = NTM_REMOTE(ntmem);
 	bool b = !ntt_can_write(nttunnel);
@@ -218,4 +234,10 @@ void *ntm_push(ntmem_t *ntmem, nttunnel_t *nttunnel)
 	}
 
 	return remote;
+}
+
+void *ntm_push(ntmem_t *ntmem)
+{
+  nttunnel_t *nttunnel = ntu_nttunnel();
+  return ntm_push_ex(ntmem, nttunnel);
 }
