@@ -97,10 +97,14 @@ void *find_exec_gadget(uint16_t instruction_tb)
   return NULL;
 }
 
+#ifdef LOG_LEVEL_1
+
 void warn_gadget()
 {
   LOG_WARN("A push gadget was found, but using this register may lead to instability after DLL is loaded.");
 }
+
+#endif /* ifdef LOG_LEVEL_1 */
 
 #ifdef __WIN32
 
