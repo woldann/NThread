@@ -106,13 +106,6 @@ void warn_gadget()
 
 #endif /* ifdef LOG_LEVEL_1 */
 
-#ifdef __WIN32
-
-uint16_t push_code = 0xc353; // push rbx
-nthread_reg_offset_t offsets[] = {NTHREAD_RBX, NTHREAD_RSP, NTHREAD_RBP, NTHREAD_RSI, NTHREAD_RDI};
-
-#endif /* ifdef __WIN32 */
-
 int main(int argc, char *argv[])
 {
 	if (HAS_ERR(neptune_init()))
