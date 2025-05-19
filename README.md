@@ -16,12 +16,6 @@
 
 ---
 
-## ⚙️ Supported Platforms
-
-- Windows x64 (currently only)
-
----
-
 ## 🚫 Code Injection? Not Needed.
 
 NThread does **not** rely on traditional code injection (e.g. shellcode, `VirtualAllocEx`, `CreateRemoteThread`, etc.).  
@@ -30,14 +24,15 @@ Instead, it uses pre-existing threads and simple instruction sequences already p
 If the target process already contains the following instruction pattern:
 
 ```assembly
-0x55          push rbp
-0xC3          ret
-0xEB 0xFE     jmp $
+0x7f0000 0x55          push rbp
+0x7f0001 0xC3          ret
+
+0x7f0050 0xEB 0xFE     jmp $
 ```
 
 You can locate such an address and use it directly with `ntu_init`:
 ```c
-ntu_init(tid, existing_push_addr, existing_jmp_addr);
+ntu_init(tid, existing_push_addr=0x7f0000, existing_jmp_addr=0x7f0050);
 ```
 
 Alternatively, as demonstrated in [tests/inject.c](https://github.com/woldann/NThread/blob/main/tests/inject.c) you can allocate this code into the target process yourself:
@@ -51,3 +46,9 @@ WriteProcessMemory(..., push_sleep_addr, push_sleep, sizeof(push_sleep));
 // Initialize NThread with known valid instructions
 ntu_init(tid, push_sleep_addr, push_sleep_addr + 2);
 ```
+
+---
+
+## ⚙️ Supported Platforms
+
+- Windows x64 (currently only)
