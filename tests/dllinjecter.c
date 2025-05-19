@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2024, 2025 Serkan Aksoy
+ * Copyright (C) 2025 Serkan Aksoy
  * All rights reserved.
  *
  * This file is part of the NThread project.
