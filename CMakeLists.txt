@@ -27,6 +27,6 @@ target_include_directories(inject PRIVATE ${NTHREAD_INCLUDE_DIR})
 
 add_executable(dllinjecter ${TESTS_DIR}/dllinjecter.c)
 target_link_libraries(dllinjecter PRIVATE NThread)
-target_compile_definitions(dllinjecter PRIVATE LOG_LEVEL_2 NEPTUNE_MODULERULES_HEADER="nthread_rules.h")
+target_compile_definitions(dllinjecter PRIVATE LOG_LEVEL_2 NEPTUNE_MODULERULES_HEADER="nthread_rules.h" LOG_FORCE_COLOR)
 target_include_directories(dllinjecter PRIVATE ${NTHREAD_INCLUDE_DIR})
 
