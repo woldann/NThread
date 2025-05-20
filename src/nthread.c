@@ -90,6 +90,8 @@ nthread_init_destroy_n_exit:
 	void *rsp = NTHREAD_GET_REG(nthread, NTHREAD_RSP);
 	void *rvp = NTHREAD_GET_REG(nthread, push_reg_offset);
 
+	nthread->n_ctx.ContextFlags = CONTEXT_INTEGER | CONTEXT_CONTROL;
+
 	NTHREAD_SET_REG(nthread, NTHREAD_RIP, push_addr);
 	NTHREAD_SET_REG(nthread, NTHREAD_RSP, rsp + NTHREAD_STACK_ADD);
 	NTHREAD_SET_REG(nthread, push_reg_offset, sleep_addr);
