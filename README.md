@@ -52,3 +52,18 @@ ntu_init(tid, push_sleep_addr, push_sleep_addr + 2);
 ## ⚙️ Supported Platforms
 
 - Windows x64 (currently only)
+
+## TODO
+
+- **nttunnel**  
+  - Separate the currently intertwined `fschan` and `nttunnel` functions  
+    to create a more modular, channel-based architecture.  
+  - Enable adding different types of channels.
+
+- **ntutils**  
+  - Improve the `init` function to allow  
+    - More flexible and parameterized configurations.  
+    - Advanced initialization options.
+
+- **Linux support**  
+  - Consider developing a kernel module-based method for Linux.
