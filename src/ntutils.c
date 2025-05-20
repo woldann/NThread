@@ -120,7 +120,8 @@ void *ntu_get_libc_base()
 
 	if (ret == NULL) {
 		ret = (void *)GetModuleHandleA("msvcrt");
-		LOG_ERROR("ntu_get_libc_base falling back to msvcrt");
+		LOG_WARN(
+			"'ucrbase.dll' not found, attempting to use 'msvcrt.dll' as fallback.");
 	}
 
 #endif /* ifndef LOG_LEVEL_1 */

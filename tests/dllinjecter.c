@@ -69,7 +69,7 @@ int64_t get_executable_len(void *addr)
 #endif /* ifdef __WIN32 */
 }
 
-void *find_exec_gadget(uint16_t instruction_tb)
+void *find_exec_gadget(uint16_t opcode_tb)
 {
 #ifdef __WIN32
 
@@ -95,10 +95,9 @@ void *find_exec_gadget(uint16_t instruction_tb)
 				if (l < 0)
 					addr -= l;
 				else {
-					void *ret =
-						memmem(addr, l,
-						       (void *)&instruction_tb,
-						       sizeof(instruction_tb));
+					void *ret = memmem(addr, l,
+							   (void *)&opcode_tb,
+							   sizeof(opcode_tb));
 					if (ret != NULL)
 						return ret;
 
@@ -153,7 +152,7 @@ int main(int argc, char *argv[])
 	int thread_id = atoi(thread_id_str);
 	if (thread_id < 0) {
 #ifdef LOG_LEVEL_1
-		LOG_INFO("thread_id must bigger than 0");
+		LOG_INFO("Invalid thread_id: must be greater than 0");
 #endif /* ifdef LOG_LEVEL_1 */
 
 		neptune_destroy();

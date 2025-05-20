@@ -181,7 +181,9 @@ nerror_t nthread_suspend(nthread_t *nthread)
 nerror_t nthread_resume(nthread_t *nthread)
 {
 #ifdef LOG_LEVEL_2
-	LOG_INFO("nthread_resume(nthread_id=%ld)", NTHREAD_GET_ID(nthread));
+	LOG_INFO(
+		"nthread_resume(nthread_id=%ld) called. If this hangs, see: https://github.com/woldann/nthread/wiki/nthread_resume-troubleshooting",
+		NTHREAD_GET_ID(nthread));
 #endif /* ifdef LOG_LEVEL_2 */
 
 #ifdef __WIN32

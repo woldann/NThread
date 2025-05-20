@@ -79,7 +79,12 @@ int main(int argc, char *argv[])
 #endif /* ifdef __WIN32 */
 
 	LOG_INFO("%lld bytes writed to %ld", write_len, pid);
-	RET_ERR(ntu_init(tid, push_sleep_addr, push_sleep_addr + 2));
+
+	if (HAS_ERR(ntu_init(tid, push_sleep_addr, push_sleep_addr + 2))) {
+		LOG_INFO("ntu_init failed");
+		neptune_destroy();
+		return 0x06;
+	}
 
 	LOG_INFO("ntutils initilaized");
 
