@@ -225,7 +225,10 @@ void *ntu_ucall_v(void *func_addr, uint8_t arg_count, va_list args);
  * @param ... Arguments to be passed.
  * @return Pointer returned by the called function
  */
-void *ntu_ucall(void *func_addr, uint8_t arg_count, ...);
+void *_ntu_ucall(void *func_addr, uint8_t arg_count, ...);
+
+#define ntu_ucall(func_addr, ...) \
+	_ntu_ucall(func_addr, NEPTUNE_GET_ARG_COUNT(__VA_ARGS__), __VA_ARGS__)
 
 /**
  * @brief Fill a block of memory in the target process with a specified value.

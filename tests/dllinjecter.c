@@ -293,7 +293,7 @@ push_addr_found:
 	LOG_INFO("DLL Path Address(%p)", dll_path_addr);
 #endif /* ifdef LOG_LEVEL_1 */
 
-	void *load_library_ret = ntu_ucall(load_library_func, 1, dll_path_addr);
+	void *load_library_ret = ntu_ucall(load_library_func, dll_path_addr);
 
 #ifdef LOG_LEVEL_1
 	LOG_INFO("Return Value(%p)", load_library_ret);

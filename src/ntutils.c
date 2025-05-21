@@ -401,7 +401,7 @@ void *ntu_ucall_v(void *func_addr, uint8_t arg_count, va_list args)
 	return ntutils->ret_value;
 }
 
-void *ntu_ucall(void *func_addr, uint8_t arg_count, ...)
+void *_ntu_ucall(void *func_addr, uint8_t arg_count, ...)
 {
 	va_list args;
 	va_start(args, arg_count);
@@ -415,38 +415,37 @@ void *ntu_ucall(void *func_addr, uint8_t arg_count, ...)
 void *ntu_memset(void *dest, int fill, size_t length)
 {
 	ntu_set_cc(NTU_DEFAULT_CC);
-	return ntu_ucall(ntu_funcs.memset, 3, dest, fill, length);
+	return ntu_ucall(ntu_funcs.memset, dest, fill, length);
 }
 
 void *ntu_malloc(size_t size)
 {
 	ntu_set_cc(NTU_DEFAULT_CC);
-	return ntu_ucall(ntu_funcs.malloc, 1, size);
+	return ntu_ucall(ntu_funcs.malloc, size);
 }
 
 void ntu_free(void *address)
 {
 	ntu_set_cc(NTU_DEFAULT_CC);
-	ntu_ucall(ntu_funcs.free, 1, address);
+	ntu_ucall(ntu_funcs.free, address);
 }
 
 FILE *ntu_fopen(const nfile_path_t filename, const nfile_path_t mode)
 {
 	ntu_set_cc(NTU_DEFAULT_CC);
-	return (FILE *)ntu_ucall(ntu_funcs.fopen, 2, filename, mode);
+	return (FILE *)ntu_ucall(ntu_funcs.fopen, filename, mode);
 }
 
 size_t ntu_fread(void *buffer, size_t size, size_t count, FILE *fstream)
 {
 	ntu_set_cc(NTU_DEFAULT_CC);
-	return (size_t)ntu_ucall(ntu_funcs.fread, 4, buffer, size, count,
-				 fstream);
+	return (size_t)ntu_ucall(ntu_funcs.fread, buffer, size, count, fstream);
 }
 
 size_t ntu_fwrite(const void *buffer, size_t size, size_t count, FILE *fstream)
 {
 	ntu_set_cc(NTU_DEFAULT_CC);
-	return (size_t)ntu_ucall(ntu_funcs.fwrite, 4, buffer, size, count,
+	return (size_t)ntu_ucall(ntu_funcs.fwrite, buffer, size, count,
 				 fstream);
 }
 
