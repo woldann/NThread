@@ -19,13 +19,14 @@ target_link_libraries(NThread INTERFACE Neptune)
 
 
 set(TESTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+set(EXAMPLES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/examples)
 
 add_executable(inject ${TESTS_DIR}/inject.c)
 target_link_libraries(inject PRIVATE NThread)
 target_compile_definitions(inject PRIVATE LOG_LEVEL_3 NEPTUNE_MODULERULES_HEADER="nthread_rules.h")
 target_include_directories(inject PRIVATE ${NTHREAD_INCLUDE_DIR})
 
-add_executable(dllinjecter ${TESTS_DIR}/dllinjecter.c)
+add_executable(dllinjecter ${EXAMPLES_DIR}/dllinjecter.c)
 target_link_libraries(dllinjecter PRIVATE NThread)
 target_compile_definitions(dllinjecter PRIVATE LOG_LEVEL_2 NEPTUNE_MODULERULES_HEADER="nthread_rules.h" LOG_FORCE_COLOR)
 target_include_directories(dllinjecter PRIVATE ${NTHREAD_INCLUDE_DIR})
