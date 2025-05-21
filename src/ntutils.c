@@ -101,6 +101,11 @@ void _ntu_set_cc(ntucc_t cc)
 		ntu_set_cc_ex(ntutils, cc);
 }
 
+void _ntu_set_default_cc()
+{
+	_ntu_set_cc(NTU_DEFAULT_CC);
+}
+
 ntutils_t *_ntu_o(ntucc_t cc)
 {
 	ntutils_t *ntutils = ntu_get();
@@ -212,7 +217,7 @@ nerror_t ntu_init_ex(ntid_t thread_id, nthread_reg_offset_t push_reg_offset,
 	ntutils_t *ntutils = ntu_resize(sizeof(ntutils_t));
 
 	RET_ERR(ntu_set(ntutils));
-	ntu_set_cc_ex(ntutils, NTU_DEFAULT_CC);
+	ntu_set_default_cc();
 
 	ntutils->nthread.thread = NULL;
 	ret = nthread_init(&ntutils->nthread, thread_id, push_reg_offset,
@@ -298,78 +303,38 @@ static nthread_reg_offset_t winx64_regargs[] = { NTHREAD_RCX, NTHREAD_RDX,
 static nerror_t ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count,
 			       va_list args)
 {
-	void *regargs[NTUCC_MAX_REGARG_COUNT];
-
-	int8_t sel_regarg_count = NTUCC_GET_REGARG_COUNT(ntutils->sel_cc);
-	int8_t regarg_count;
-
-	if (arg_count >= sel_regarg_count)
-		regarg_count = sel_regarg_count;
-	else
-		regarg_count = arg_count;
-
-	for (int8_t i = 0; i < regarg_count; i++)
-		regargs[i] = va_arg(args, void *);
-
-	uint8_t pusharg_count = arg_count - regarg_count;
 	nthread_t *nthread = &ntutils->nthread;
-	void *rsp = nthread_stack_begin(nthread);
-
-	void *wpos;
-	nthread_reg_offset_t *regargs_list;
 
 #ifdef NTU_GLOBAL_CC
-
-#ifdef LOG_LEVEL_3
-	LOG_INFO("ntu_set_args_v(nthread_id=%ld, args=%d, args=%p)",
-		 NTHREAD_GET_ID(&ntutils->nthread), arg_count, args);
-#endif /* ifdef LOG_LEVEL_3 */
-
-	switch (NTU_GLOBAL_CC) {
-	default:
-
-#else /* ifndef NTU_GLOBAL_CC */
-
-#ifdef LOG_LEVEL_3
-	LOG_INFO("ntu_set_args_v(cc=%04X, nthread_id=%ld, args=%d, args=%p)",
-		 ntutils->sel_cc, NTHREAD_GET_ID(&ntutils->nthread), arg_count,
-		 args);
-#endif /* ifdef LOG_LEVEL_3 */
-
-	switch (ntutils->sel_cc) {
-	default:
-		return GET_ERR(NTUTILS_UNKNOWN_CC_ERROR);
-
+	ntucc_t sel_cc = NTU_GLOBAL_CC;
+#else /* ifdnef NTU_GLOBAL_CC */
+	ntucc_t sel_cc = ntutils->sel_cc;
 #endif /* ifndef NTU_GLOBAL_CC */
 
-#ifdef NTUCC_WINDOWS_X64
+#ifdef LOG_LEVEL_3
+	LOG_INFO("ntu_set_args_v(cc=%p, nthread_id=%ld, args=%d, args=%p)",
+		 sel_cc, NTHREAD_GET_ID(nthread), arg_count, args);
+#endif /* ifdef LOG_LEVEL_3 */
 
-	case NTUCC_WINDOWS_X64:
-		regargs_list = winx64_regargs;
-ntu_sel_cc_winx64:
-		wpos = rsp + sizeof(void *) * 4;
-		break;
+	void *rsp = nthread_stack_begin(nthread);
+	void *wpos;
 
-#endif /* ifdef NTUCC_WINDOWS_X64 */
-
-#ifdef NTUCC_WINDOWS_X64_PASS_RCX
-
-	case NTUCC_WINDOWS_X64_PASS_RCX:
-		regargs_list = winx64_regargs + 1;
-		goto ntu_sel_cc_winx64;
-
-#endif /* ifdef NTUCC_WINDOWS_X64_PASS_RCX */
-	}
-
-	for (uint8_t i = 0; i < pusharg_count; i++) {
+	for (int8_t i = 0; i < arg_count; i++) {
 		void *arg = va_arg(args, void *);
-		RET_ERR(ntu_write_with_memset(wpos, arg, sizeof(arg)));
+		if (i >= 8) {
+ntu_set_args_v_stack:
+			RET_ERR(ntu_write_with_memset(wpos, arg, sizeof(arg)));
+			wpos += sizeof(arg);
+		} else {
+			int8_t reg_index = NTUCC_GET_ARG(sel_cc, i);
+			if (reg_index == 0)
+				goto ntu_set_args_v_stack;
 
-		wpos += sizeof(void *);
+			nthread_reg_offset_t off =
+				NTHREAD_REG_INDEX_TO_OFFSET(reg_index);
+			NTHREAD_SET_REG(nthread, off, arg);
+		}
 	}
-
-	for (int8_t i = 0; i < regarg_count; i++)
-		NTHREAD_SET_REG(nthread, regargs_list[i], regargs[i]);
 
 	return N_OK;
 }
@@ -414,37 +379,37 @@ void *_ntu_ucall(void *func_addr, uint8_t arg_count, ...)
 
 void *ntu_memset(void *dest, int fill, size_t length)
 {
-	ntu_set_cc(NTU_DEFAULT_CC);
+	ntu_set_default_cc();
 	return ntu_ucall(ntu_funcs.memset, dest, fill, length);
 }
 
 void *ntu_malloc(size_t size)
 {
-	ntu_set_cc(NTU_DEFAULT_CC);
+	ntu_set_default_cc();
 	return ntu_ucall(ntu_funcs.malloc, size);
 }
 
 void ntu_free(void *address)
 {
-	ntu_set_cc(NTU_DEFAULT_CC);
+	ntu_set_default_cc();
 	ntu_ucall(ntu_funcs.free, address);
 }
 
 FILE *ntu_fopen(const nfile_path_t filename, const nfile_path_t mode)
 {
-	ntu_set_cc(NTU_DEFAULT_CC);
+	ntu_set_default_cc();
 	return (FILE *)ntu_ucall(ntu_funcs.fopen, filename, mode);
 }
 
 size_t ntu_fread(void *buffer, size_t size, size_t count, FILE *fstream)
 {
-	ntu_set_cc(NTU_DEFAULT_CC);
+	ntu_set_default_cc();
 	return (size_t)ntu_ucall(ntu_funcs.fread, buffer, size, count, fstream);
 }
 
 size_t ntu_fwrite(const void *buffer, size_t size, size_t count, FILE *fstream)
 {
-	ntu_set_cc(NTU_DEFAULT_CC);
+	ntu_set_default_cc();
 	return (size_t)ntu_ucall(ntu_funcs.fwrite, buffer, size, count,
 				 fstream);
 }

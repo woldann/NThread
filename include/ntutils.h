@@ -109,7 +109,11 @@ ntutils_t *ntu_resize(size_t new_size);
 
 void _ntu_set_cc(ntucc_t cc);
 
-#define ntu_set_cc(cc) _ntu_set_cc(cc)
+#define ntu_set_cc(cc) _ntu_set_default_cc(cc)
+
+void _ntu_set_default_cc();
+
+#define ntu_set_default_cc() _ntu_set_default_cc()
 
 ntutils_t *_ntu_o(ntucc_t cc);
 
@@ -120,6 +124,11 @@ ntutils_t *_ntu_o(ntucc_t cc);
 #define ntu_set_cc(cc) \
 	do {           \
 	} while (0)
+
+#define ntu_set_default_cc(cc) \
+	do {                   \
+	} while (0)
+
 #define ntu_o(cc) ntu_get()
 
 #endif // NTU_GLOBAL_CC

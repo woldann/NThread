@@ -35,32 +35,76 @@
 
 #include "neptune.h"
 
-#define NTUCC_1_REGARG (0x01)
-#define NTUCC_2_REGARG (0x02)
-#define NTUCC_3_REGARG (0x03)
-#define NTUCC_4_REGARG (0x04)
-#define NTUCC_5_REGARG (0x05)
-#define NTUCC_6_REGARG (0x06)
-#define NTUCC_7_REGARG (0x07)
-#define NTUCC_HAS_REGARG_MASK NTUCC_7_REGARG
+typedef int64_t ntucc_t;
 
-#define NTUCC_REVERSE_OP (0x08)
-#define NTUCC_AUTO_CLEAN (0x10)
+#define NTUCC_RBX NTHREAD_RBX_INDEX
+#define NTUCC_RCX NTHREAD_RCX_INDEX
+#define NTUCC_RDX NTHREAD_RDX_INDEX
+#define NTUCC_RDI NTHREAD_RDI_INDEX
+#define NTUCC_RSI NTHREAD_RSI_INDEX
+#define NTUCC_RSP NTHREAD_RSP_INDEX
+#define NTUCC_RBP NTHREAD_RSP_INDEX
+#define NTUCC_R8 NTHREAD_R8_INDEX
+#define NTUCC_R9 NTHREAD_R9_INDEX
+#define NTUCC_R10 NTHREAD_R10_INDEX
+#define NTUCC_R11 NTHREAD_R11_INDEX
+#define NTUCC_R12 NTHREAD_R12_INDEX
+#define NTUCC_R13 NTHREAD_R13_INDEX
+#define NTUCC_R14 NTHREAD_R14_INDEX
+#define NTUCC_R15 NTHREAD_R15_INDEX
 
-#define NTUCC_WINDOWS_X64 (0x0100 | NTUCC_4_REGARG | NTUCC_AUTO_CLEAN)
-#define NTU_CDECL
-#define NTU_STDCALL
-#define NTU_FASTCALL
+#define NTUCC_CALC_ARG(reg_index, arg_pos) \
+	(((int64_t)(reg_index)) << (((arg_pos) * 4) + 0x20))
+
+#define NTUCC_CREATE_ARG_1(i1) (NTUCC_CALC_ARG(i1, 0))
+#define NTUCC_CREATE_ARG_2(i1, i2) \
+	(NTUCC_CREATE_ARG_1(i1) + NTUCC_CALC_ARG(i2, 1))
+
+#define NTUCC_CREATE_ARG_3(i1, i2, i3) \
+	(NTUCC_CREATE_ARG_2(i1, i2) + NTUCC_CALC_ARG(i3, 2))
+
+#define NTUCC_CREATE_ARG_4(i1, i2, i3, i4) \
+	(NTUCC_CREATE_ARG_3(i1, i2, i3) + NTUCC_CALC_ARG(i4, 3))
+
+#define NTUCC_CREATE_ARG_5(i1, i2, i3, i4, i5) \
+	(NTUCC_CREATE_ARG_4(i1, i2, i3, i4) + NTUCC_CALC_ARG(i5, 4))
+
+#define NTUCC_CREATE_ARG_6(i1, i2, i3, i4, i5, i6) \
+	(NTUCC_CREATE_ARG_5(i1, i2, i3, i4, i5) + NTUCC_CALC_ARG(i6, 5))
+
+#define NTUCC_CREATE_ARG_7(i1, i2, i3, i4, i5, i6, i7) \
+	(NTUCC_CREATE_ARG_6(i1, i2, i3, i4, i5, i6) + NTUCC_CALC_ARG(i7, 6))
+
+#define NTUCC_CREATE_ARG_8(i1, i2, i3, i4, i5, i6, i7, i8) \
+	(NTUCC_CREATE_ARG_6(i1, i2, i3, i4, i5, i6, i7) + NTUCC_CALC_ARG(i8, 7))
+
+#define NTUCC_GET_ARG_MACRO(_1, _2, _3, _4, _5, _6, _7, _8, NAME, ...) NAME
+#define NTUCC_CREATE_ARG_MASK(...)                                  \
+	NTUCC_GET_ARG_MACRO(__VA_ARGS__, NTUCC_CREATE_ARG_8,        \
+			    NTUCC_CREATE_ARG_7, NTUCC_CREATE_ARG_6, \
+			    NTUCC_CREATE_ARG_5, NTUCC_CREATE_ARG_4, \
+			    NTUCC_CREATE_ARG_3, NTUCC_CREATE_ARG_2, \
+			    NTUCC_CREATE_ARG_1)(__VA_ARGS__)
+
+#define NTUCC_GET_ARG(cc, arg_pos) \
+	(((int8_t)(cc >> (((arg_pos) * 4) + 0x20))) & 0x0f)
+
+#define NTUCC_REVERSE_OP (0x10000)
+#define NTUCC_AUTO_CLEAN (0x20000)
+
+#define NTUCC_WINDOWS_X64                                                  \
+	(NTUCC_CREATE_ARG_MASK(NTUCC_RCX, NTUCC_RDX, NTUCC_R8, NTUCC_R9) | \
+	 NTUCC_AUTO_CLEAN)
 
 #ifdef NTUCC_WINDOWS_X64
-#define NTUCC_WINDOWS_X64_PASS_RCX (0x0101 | NTUCC_3_REGARG | NTUCC_AUTO_CLEAN)
+#define NTUCC_WINDOWS_X64_PASS_RCX                              \
+	(NTUCC_CREATE_ARG_MASK(NTUCC_RDX, NTUCC_R8, NTUCC_R9) | \
+	 NTUCC_AUTO_CLEAN)
 #endif // NTUCC_WINDOWS_X64
 
 #ifdef NTU_CDECL
 
 #endif // NTU_CDECL
-
-typedef int ntucc_t;
 
 #define NTUCC_MAX_REGARG_COUNT 4
 

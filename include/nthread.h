@@ -92,6 +92,27 @@ typedef int16_t nthread_reg_offset_t;
 #define NTHREAD_RSP WINDOWS_RSP_OFFSET
 #define NTHREAD_RBP WINDOWS_RBP_OFFSET
 
+#define NTHREAD_RAX_INDEX 0x00
+#define NTHREAD_RCX_INDEX 0x01
+#define NTHREAD_RDX_INDEX 0x02
+#define NTHREAD_RBX_INDEX 0x03
+#define NTHREAD_RSP_INDEX 0x04
+#define NTHREAD_RBP_INDEX 0x05
+#define NTHREAD_RSI_INDEX 0x06
+#define NTHREAD_RDI_INDEX 0x07
+#define NTHREAD_R8_INDEX 0x08
+#define NTHREAD_R9_INDEX 0x09
+#define NTHREAD_R10_INDEX 0x0A
+#define NTHREAD_R11_INDEX 0x0B
+#define NTHREAD_R12_INDEX 0x0C
+#define NTHREAD_R13_INDEX 0x0D
+#define NTHREAD_R14_INDEX 0x0E
+#define NTHREAD_R15_INDEX 0x0F
+#define NTHREAD_RIP_INDEX 0x10
+
+#define NTHREAD_REG_INDEX_TO_OFFSET(reg_index) \
+	((nthread_reg_offset_t)(NTHREAD_RAX + ((sizeof(DWORD64)) * reg_index)))
+
 #define NTHREAD_ACCESS THREAD_ALL_ACCESS
 
 typedef DWORD ntid_t;
