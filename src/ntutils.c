@@ -275,7 +275,7 @@ nerror_t ntu_write_with_memset_ex(void *dest, const void *source, size_t length,
 
 		void *addr = ntu_memset(dest + i, ms_value, j - i);
 		if (addr == NULL)
-			return GET_ERR(NTUTILS_T_MEMSET_ERROR);
+			return GET_ERR(NTUTILS_NTU_MEMSET_ERROR);
 
 		i = j;
 	}

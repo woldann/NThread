@@ -71,11 +71,14 @@ struct ntmem {
 typedef struct ntmem ntmem_t;
 
 #define NTMEM_ERROR 0x9200
+
 #define NTMEM_ALLOC_ERROR 0x9201
 #define NTMEM_NTU_MALLOC_ERROR 0x9202
 #define NTMEM_NTU_MEMSET_ERROR 0x9203
 #define NTMEM_PUSH_WITH_TUNNEL_ERROR 0x9204
 #define NTMEM_PUSH_WITH_MEMSET_ERROR 0x9205
+
+#define NTMEM_ERROR_E NTMEM_PUSH_WITH_MEMSET_ERROR
 
 #include "ntutils.h"
 
