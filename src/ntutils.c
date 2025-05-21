@@ -467,12 +467,10 @@ int ntu_fclose(FILE *fstream)
 	return (size_t)ntutils->ret_value;
 }
 
-static void *ntu_alloc_str_ex(const char *str, size_t alloc_len, size_t str_len)
+void *ntu_alloc_str(const char *str)
 {
-	if (str_len > alloc_len)
-		return NULL;
-
-	void *addr = ntu_malloc(alloc_len);
+	size_t str_len = (strlen(str) + 1) * sizeof(*str);
+	void *addr = ntu_malloc(str_len);
 	if (addr == NULL)
 		return NULL;
 
@@ -482,12 +480,6 @@ static void *ntu_alloc_str_ex(const char *str, size_t alloc_len, size_t str_len)
 	}
 
 	return addr;
-}
-
-void *ntu_alloc_str(const char *str)
-{
-	size_t str_len = (strlen(str) + 1) * sizeof(*str);
-	return ntu_alloc_str_ex(str, str_len, str_len);
 }
 
 nttunnel_t *ntu_nttunnel()
