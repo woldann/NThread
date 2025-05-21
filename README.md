@@ -35,7 +35,7 @@ You can locate such an address and use it directly with `ntu_init`:
 ntu_init(tid, existing_push_addr=0x7f0000, existing_jmp_addr=0x7f0050);
 ```
 
-Alternatively, as demonstrated in [tests/inject.c](https://github.com/woldann/NThread/blob/main/tests/inject.c) you can allocate this code into the target process yourself:
+Alternatively, as demonstrated in [tests/inject.c](tests/inject.c) you can allocate this code into the target process yourself:
 ```c
 int8_t push_sleep[] = { 0x55, 0xC3, 0xEB, 0xFE };
 
@@ -52,6 +52,16 @@ ntu_init(tid, push_sleep_addr, push_sleep_addr + 2);
 ## ⚙️ Supported Platforms
 
 - Windows x64 (currently only)
+
+---
+
+## Examples
+
+### DLL Injection Example
+
+The `dllinjecter` example demonstrates how to perform DLL injection by hijacking an existing thread in the target process without using traditional remote thread creation methods. You can find the example source here: [`examples/dllinjecter.c`](examples/dllinjecter.c)
+
+---
 
 ## TODO
 
