@@ -245,7 +245,7 @@ push_addr_found:
 	int wide_len = MultiByteToWideChar(CP_UTF8, 0, dll_path, dll_path_len,
 					   NULL, 0);
 
-	ntmem_t *ntmem = ntm_create_ex((wide_len + 1) * sizeof(wchar_t));
+	ntmem_t *ntmem = ntm_create_with_alloc_ex((wide_len + 1) * sizeof(wchar_t));
 	if (ntmem == NULL) {
 		LOG_INFO("ntm_create failed");
 		ntu_destroy();

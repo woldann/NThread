@@ -174,11 +174,11 @@ nerror_t ntt_init_ex(nttunnel_t *nttunnel, nttunnel_fschan_flags_t flags)
 
 	memset(nttunnel, 0, sizeof(nttunnel_t));
 
-	nttunnel->ntmem = ntm_create_ex(NFILE_MAX_PATH_SIZE +
+	nttunnel->ntmem = ntm_create_with_alloc_ex(NFILE_MAX_PATH_SIZE +
 					NTTUNNEL_FSCHAN_MAX_MODE_SIZE);
 
 	if (nttunnel->ntmem == NULL)
-		return GET_ERR(NTTUNNEL_NTM_CREATE_ERROR);
+		return GET_ERR(NTTUNNEL_NTM_CREATE_WITH_ALLOC_EX_ERROR);
 
 	nttunnel->max_transfer = NTTUNNEL_FSCHAN_CALC_MAX_TRANSFER(flags);
 
@@ -206,7 +206,7 @@ void ntt_destroy(nttunnel_t *nttunnel)
 		return;
 
 	if (nttunnel->ntmem != NULL) {
-		ntm_delete(nttunnel->ntmem);
+		ntm_delete_and_free(nttunnel->ntmem);
 		nttunnel->ntmem = NULL;
 	}
 

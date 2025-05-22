@@ -77,6 +77,8 @@ typedef struct ntmem ntmem_t;
 #define NTMEM_NTU_MEMSET_ERROR 0x9203
 #define NTMEM_PUSH_WITH_TUNNEL_ERROR 0x9204
 #define NTMEM_PUSH_WITH_MEMSET_ERROR 0x9205
+#define NTM_ALLOC_REMOTE_ERROR 0x9206
+#define NTM_RESET_ERROR 0x9207
 
 #define NTMEM_ERROR_E NTMEM_PUSH_WITH_MEMSET_ERROR
 
@@ -104,20 +106,13 @@ void ntm_disable_safe_write(ntmem_t *ntmem);
  */
 bool ntm_is_safe_write(ntmem_t *ntmem);
 
-/**
- * @brief Initialize memory structure.
- *
- * @param ntmem Pointer to memory structure.
- * @return Error code.
- */
-nerror_t ntm_init(ntmem_t *ntmem);
+nerror_t ntm_reset(ntmem_t *ntmem);
 
-/**
- * @brief Destroy and clean up the memory structure.
- *
- * @param ntmem Pointer to memory structure.
- */
-void ntm_destroy(ntmem_t *ntmem);
+void *ntm_alloc_remote(ntmem_t *ntmem);
+
+void ntm_free_remote(ntmem_t *ntmem);
+
+nerror_t ntm_alloc_and_reset(ntmem_t *ntmem);
 
 /**
  * @brief Create and initialize a new memory structure with specific length.
@@ -134,14 +129,20 @@ ntmem_t *ntm_create_ex(size_t length);
  */
 ntmem_t *ntm_create();
 
+ntmem_t *ntm_create_with_alloc_ex(size_t length);
+
+ntmem_t *ntm_create_with_alloc();
+
+ntmem_t *ntm_create_from_remote(void *remote, size_t length);
+
 /**
- * @brief Delete memory structure and internal buffer.
- *
- * This function frees both the structure and its associated memory.
+ * @brief Delete memory structure.
  *
  * @param ntmem Pointer to memory structure.
  */
 void ntm_delete(ntmem_t *ntmem);
+
+void ntm_delete_and_free(ntmem_t *ntmem);
 
 /**
  * @brief Delete the ntmem structure and detach remote memory pointer.
