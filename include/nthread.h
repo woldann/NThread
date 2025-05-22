@@ -113,7 +113,9 @@ typedef int16_t nthread_reg_offset_t;
 #define NTHREAD_REG_INDEX_TO_OFFSET(reg_index) \
 	((nthread_reg_offset_t)(NTHREAD_RAX + ((sizeof(DWORD64)) * reg_index)))
 
-#define NTHREAD_ACCESS THREAD_ALL_ACCESS
+#define NTHREAD_ACCESS                                                    \
+	THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | \
+		THREAD_QUERY_INFORMATION
 
 typedef DWORD ntid_t;
 typedef HANDLE nthread_handle_t;
@@ -171,13 +173,13 @@ ntid_t nthread_get_id(nthread_t *nthread);
 	(((void **)(((void *)&nthread->n_ctx) + reg))[0])
 
 #define NTHREAD_SET_REG(nthread, reg, set) \
-	(((void **)(((void *)&nthread->n_ctx) + reg))[0] = (void *)set)
+	(((void **)(((void *)&nthread->n_ctx) + (reg)))[0] = (void *)(set))
 
 #define NTHREAD_GET_OREG(nthread, reg) \
 	(((void **)(((void *)&nthread->o_ctx) + reg))[0])
 
 #define NTHREAD_SET_OREG(nthread, reg, set) \
-	(((void **)(((void *)&nthread->o_ctx) + reg))[0] = (void *)set)
+	(((void **)(((void *)&nthread->o_ctx) + (reg)))[0] = (void *)(set))
 
 /**
  * @brief Initialize an NThread instance with the given thread ID and control parameters.

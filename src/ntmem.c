@@ -154,7 +154,7 @@ void *ntm_push_with_tunnel(ntmem_t *ntmem, nttunnel_t *nttunnel)
 	return ntm_push_with_tunnel_ex(ntmem, nttunnel, 0, NTM_LENGTH(ntmem));
 }
 
-static void *ntm_push_with_memset_ex(ntmem_t *ntmem, size_t begin, size_t len)
+static void *ntm_push_with_memset_dest(ntmem_t *ntmem, size_t begin, size_t len)
 {
 #ifdef LOG_LEVEL_3
 	LOG_INFO("ntm_push_with_memset(ntmem=%p, begin=%d, len=%d)", ntmem,
@@ -171,7 +171,7 @@ static void *ntm_push_with_memset_ex(ntmem_t *ntmem, size_t begin, size_t len)
 	else
 		last_dest = local_cpy;
 
-	if (HAS_ERR(ntu_write_with_memset_ex(remote, local, len, last_dest)))
+	if (HAS_ERR(ntu_write_with_memset_dest(remote, local, len, last_dest)))
 		return NULL;
 
 	memcpy(local_cpy, local, len);
@@ -180,7 +180,7 @@ static void *ntm_push_with_memset_ex(ntmem_t *ntmem, size_t begin, size_t len)
 
 void *ntm_push_with_memset(ntmem_t *ntmem)
 {
-	return ntm_push_with_memset_ex(ntmem, 0, NTM_LENGTH(ntmem));
+	return ntm_push_with_memset_dest(ntmem, 0, NTM_LENGTH(ntmem));
 }
 
 size_t _find_diff_rev(void *mem1, void *mem2, size_t len)
@@ -226,7 +226,7 @@ void *ntm_push_ex(ntmem_t *ntmem, nttunnel_t *nttunnel)
 		size_t l = el - sl + 1;
 
 		if (b || l < 3) {
-			if (ntm_push_with_memset_ex(ntmem, sl, l) == NULL)
+			if (ntm_push_with_memset_dest(ntmem, sl, l) == NULL)
 				return NULL;
 		} else if (ntm_push_with_tunnel_ex(ntmem, nttunnel, sl, l) ==
 			   NULL)

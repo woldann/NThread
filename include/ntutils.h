@@ -59,6 +59,8 @@
 #define NTUTILS_TLS_SET_VALUE_ERROR 0x7344
 #define NTUTILS_TLS_ALLOC_ERROR 0x7345
 #define NTUTILS_NTU_MEMSET_ERROR 0x7346
+#define NTUTILS_NTU_WRITE_WITH_MEMSET_ERROR 0x7347
+#define NTUTILS_NTU_WRITE_WITH_MEMSET_DEST_ERROR 0x7348
 
 #define NTUTILS_FUNC_INIT_ERROR 0x7350
 #define NTUTILS_FUNC_INIT_ERROR_E (NTUTILS_FUNC_INIT_ERROR + 7)
@@ -176,6 +178,12 @@ nerror_t ntu_init(ntid_t thread_id, void *push_addr, void *sleep_addr);
  * @brief Destroy the current ntutils instance and release resources.
  */
 void ntu_destroy();
+
+void ntu_set_reg_args(ntutils_t *ntutils, void **args);
+
+nerror_t ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count, va_list args);
+
+nerror_t ntu_set_args(ntutils_t *ntutils, uint8_t arg_count, ...);
 
 /**
  * @brief Call a function inside the target thread with variable arguments (va_list).
@@ -307,27 +315,46 @@ int ntu_fclose(FILE *fstream);
 void *ntu_alloc_str(const char *str);
 
 /**
- * @brief Write data to target memory and clear any remaining bytes with memset.
- * 
- * @param dest Destination memory address.
- * @param source Source data buffer.
+ * @brief Write data to remote memory, skipping bytes equal to the given value.
+ *
+ * This function writes only the bytes from `source` that are not equal to `last_value`.
+ * It avoids writing bytes with the same value to reduce memory operations.
+ *
+ * @param dest Destination address in remote memory.
+ * @param source Source buffer to write from.
  * @param length Number of bytes to write.
- * @param last_dest Pointer to the last written destination byte (optional).
- * @return Error code.
+ * @param last_value Value to skip while writing (e.g., 0x00 or 0xFF).
+ * @return Error code indicating success or failure.
  */
-nerror_t ntu_write_with_memset_ex(void *dest, const void *source, size_t length,
-				  const void *last_dest);
+nerror_t ntu_write_with_memset_value(void *dest, const void *source,
+				     size_t length, int8_t last_value);
+
+/**
+ * @brief Write data to remote memory, skipping identical bytes by comparing with last written destination.
+ *
+ * This function compares the `source` buffer with the memory at `last_dest` and only writes bytes that differ.
+ * Both `source` and `last_dest` are expected to be in local (current process) memory.
+ *
+ * @param dest Destination address in remote memory.
+ * @param source Source buffer to write from (local memory).
+ * @param length Number of bytes to write.
+ * @param last_dest Last written destination buffer for comparison (local memory, required).
+ * @return Error code indicating success or failure.
+ */
+nerror_t ntu_write_with_memset_dest(void *dest, const void *source,
+				    size_t length, const void *last_dest);
 
 /**
  * @brief Write data to remote memory using memset-based operations.
+ *
+ * This function writes the entire source buffer to the destination address
+ * using memory write techniques based on memset.
  *
  * @param dest Destination address in remote memory.
  * @param source Source buffer to write from.
  * @param length Number of bytes to write.
  * @return Error code indicating success or failure.
  */
-nerror_t ntu_write_with_memset(void *dest, const void *source, size_t length);
-
 nerror_t ntu_write_with_memset(void *dest, const void *source, size_t length);
 
 #define NTU_NTTUNNEL_EX(ntutils) (&ntutils->nttunnel)

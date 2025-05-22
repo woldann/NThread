@@ -258,8 +258,35 @@ void ntu_destroy()
 	ntu_set(NULL);
 }
 
-nerror_t ntu_write_with_memset_ex(void *dest, const void *source, size_t length,
-				  const void *last_dest)
+nerror_t ntu_write_with_memset_value(void *dest, const void *source,
+				     size_t length, int8_t last_value)
+{
+	size_t i = 0, j;
+	while (i < length) {
+		while (last_value == ((int8_t *)source)[i]) {
+			i++;
+			if (i >= length)
+				break;
+		}
+
+		int8_t ms_value = ((int8_t *)source)[i];
+		for (j = i + 1; j < length; j++) {
+			if (((int8_t *)source)[j] != ms_value)
+				break;
+		}
+
+		void *addr = ntu_memset(dest + i, ms_value, j - i);
+		if (addr == NULL)
+			return GET_ERR(NTUTILS_NTU_MEMSET_ERROR);
+
+		i = j;
+	}
+
+	return N_OK;
+}
+
+nerror_t ntu_write_with_memset_dest(void *dest, const void *source,
+				    size_t length, const void *last_dest)
 {
 	size_t i = 0, j;
 	while (i < length) {
@@ -290,18 +317,47 @@ nerror_t ntu_write_with_memset_ex(void *dest, const void *source, size_t length,
 
 nerror_t ntu_write_with_memset(void *dest, const void *source, size_t length)
 {
-	return ntu_write_with_memset_ex(dest, source, length, 0);
+	size_t i = 0, j;
+	while (i < length) {
+		int8_t ms_value = ((int8_t *)source)[i];
+		for (j = i + 1; j < length; j++) {
+			if (((int8_t *)source)[j] != ms_value)
+				break;
+		}
+
+		void *addr = ntu_memset(dest + i, ms_value, j - i);
+		if (addr == NULL)
+			return GET_ERR(NTUTILS_NTU_MEMSET_ERROR);
+
+		i = j;
+	}
+
+	return N_OK;
 }
 
-#ifdef NTUCC_WINDOWS_X64
+void ntu_set_reg_args(ntutils_t *ntutils, void **args)
+{
+	nthread_t *nthread = &ntutils->nthread;
 
-static nthread_reg_offset_t winx64_regargs[] = { NTHREAD_RCX, NTHREAD_RDX,
-						 NTHREAD_R8, NTHREAD_R9 };
+#ifdef NTU_GLOBAL_CC
+	ntucc_t sel_cc = NTU_GLOBAL_CC;
+#else /* ifdnef NTU_GLOBAL_CC */
+	ntucc_t sel_cc = ntutils->sel_cc;
+#endif /* ifndef NTU_GLOBAL_CC */
 
-#endif /* ifdef NTUCC_WINDOWS_X64 */
+	for (int8_t i = 0; i < 8; i++) {
+		int8_t reg_index = NTUCC_GET_ARG(sel_cc, i);
+		if (reg_index == 0)
+			continue;
 
-static nerror_t ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count,
-			       va_list args)
+		nthread_reg_offset_t off =
+			NTHREAD_REG_INDEX_TO_OFFSET(reg_index);
+
+		NTHREAD_SET_REG(nthread, off, args[i]);
+	}
+}
+
+nerror_t ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count, va_list args)
 {
 	nthread_t *nthread = &ntutils->nthread;
 
@@ -312,31 +368,92 @@ static nerror_t ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count,
 #endif /* ifndef NTU_GLOBAL_CC */
 
 #ifdef LOG_LEVEL_3
-	LOG_INFO("ntu_set_args_v(cc=%p, nthread_id=%ld, args=%d, args=%p)",
+	LOG_INFO("ntu_set_args_v(cc=%p, nthread_id=%ld, arg_count=%d, args=%p)",
 		 sel_cc, NTHREAD_GET_ID(nthread), arg_count, args);
 #endif /* ifdef LOG_LEVEL_3 */
 
-	void *rsp = nthread_stack_begin(nthread);
-	void *wpos;
+	va_list args_copy;
+	va_copy(args_copy, args);
+
+	uint8_t push_arg_count = 0;
+
+	void *reg_args[8];
+	nthread_reg_offset_t reg_offsets[8];
 
 	for (int8_t i = 0; i < arg_count; i++) {
 		void *arg = va_arg(args, void *);
-		if (i >= 8) {
-ntu_set_args_v_stack:
-			RET_ERR(ntu_write_with_memset(wpos, arg, sizeof(arg)));
-			wpos += sizeof(arg);
-		} else {
+		if (i < 8) {
 			int8_t reg_index = NTUCC_GET_ARG(sel_cc, i);
-			if (reg_index == 0)
-				goto ntu_set_args_v_stack;
-
-			nthread_reg_offset_t off =
-				NTHREAD_REG_INDEX_TO_OFFSET(reg_index);
-			NTHREAD_SET_REG(nthread, off, arg);
+			if (reg_index != 0) {
+				reg_args[i] = arg;
+				continue;
+			}
 		}
+
+		push_arg_count++;
 	}
 
+	if (push_arg_count != 0) {
+		bool reverse = (sel_cc & NTUCC_REVERSE_OP) != 0;
+		void *rsp = nthread_stack_begin(nthread);
+
+		void *wpos = rsp + NTUCC_GET_STACK_ADD(sel_cc);
+		size_t push_args_size = push_arg_count * sizeof(void *);
+
+		if (ntu_memset(wpos, 0, push_args_size) == NULL) {
+			va_end(args_copy);
+			return GET_ERR(NTUTILS_NTU_MEMSET_ERROR);
+		}
+
+		void **push_args = N_ALLOC(push_args_size);
+		if (push_args == NULL) {
+			va_end(args_copy);
+			return GET_ERR(NTUTILS_ALLOC_ERROR);
+		}
+
+		int8_t push_arg_pos;
+		if (reverse)
+			push_arg_pos = push_arg_count - 1;
+		else
+			push_arg_pos = 0;
+
+		for (int8_t i = 0; i < arg_count; i++) {
+			va_list *arg = va_arg(args_copy, void *);
+			if (i < 8) {
+				int8_t reg_index = NTUCC_GET_ARG(sel_cc, i);
+				if (reg_index != 0)
+					continue;
+			}
+
+			push_args[push_arg_pos] = arg;
+			if (reverse)
+				push_arg_pos--;
+			else
+				push_arg_pos++;
+		}
+
+		va_end(args_copy);
+		if (HAS_ERR(ntu_write_with_memset_value(wpos, push_args,
+							push_args_size, 0)))
+			return GET_ERR(
+				NTUTILS_NTU_WRITE_WITH_MEMSET_DEST_ERROR);
+
+	} else
+		va_end(args_copy);
+
+	ntu_set_reg_args(ntutils, reg_args);
 	return N_OK;
+}
+
+nerror_t ntu_set_args(ntutils_t *ntutils, uint8_t arg_count, ...)
+{
+	va_list args;
+	va_start(args, arg_count);
+
+	nerror_t ret = ntu_set_args_v(ntutils, arg_count, args);
+
+	va_end(args);
+	return ret;
 }
 
 nerror_t ntu_call_v(ntutils_t *ntutils, void *func_addr, uint8_t arg_count,

@@ -87,19 +87,22 @@ typedef int64_t ntucc_t;
 			    NTUCC_CREATE_ARG_1)(__VA_ARGS__)
 
 #define NTUCC_GET_ARG(cc, arg_pos) \
-	(((int8_t)(cc >> (((arg_pos) * 4) + 0x20))) & 0x0f)
+	(((int8_t)(cc >> (((arg_pos) * 4) + 0x20))) & 0x0F)
 
 #define NTUCC_REVERSE_OP (0x10000)
 #define NTUCC_AUTO_CLEAN (0x20000)
 
+#define NTUCC_GET_STACK_ADD(cc) ((uint16_t)(cc & 0xFFFF))
+
 #define NTUCC_WINDOWS_X64                                                  \
 	(NTUCC_CREATE_ARG_MASK(NTUCC_RCX, NTUCC_RDX, NTUCC_R8, NTUCC_R9) | \
-	 NTUCC_AUTO_CLEAN)
+	 NTUCC_AUTO_CLEAN + sizeof(DWORD64) * 4)
 
 #ifdef NTUCC_WINDOWS_X64
-#define NTUCC_WINDOWS_X64_PASS_RCX                              \
-	(NTUCC_CREATE_ARG_MASK(NTUCC_RDX, NTUCC_R8, NTUCC_R9) | \
-	 NTUCC_AUTO_CLEAN)
+#define NTUCC_WINDOWS_X64_PASS_RCX                               \
+	((NTUCC_CREATE_ARG_MASK(NTUCC_RDX, NTUCC_R8, NTUCC_R9) | \
+	  NTUCC_AUTO_CLEAN) +                                    \
+	 sizeof(DWORD64) * 4)
 #endif // NTUCC_WINDOWS_X64
 
 #ifdef NTU_CDECL

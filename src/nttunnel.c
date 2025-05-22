@@ -123,7 +123,7 @@ nerror_t _ntt_init_fschan(nttunnel_t *nttunnel, nttunnel_fschan_t *fschan,
 
 	void *remote = ntm_push_ex(ntmem, nttunnel);
 	if (remote == NULL)
-		return GET_ERR(NTTUNNEL_NTM_PUSH_MEMSET_ERROR);
+		return GET_ERR(NTTUNNEL_NTM_PUSH_ERROR);
 
 	fschan->remote_file = ntu_fopen(remote, remote + temp_path_size);
 	if (fschan->remote_file == NULL)
