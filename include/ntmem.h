@@ -42,12 +42,12 @@
 
 #define NTMEM_SAFE_WRITE 0x10
 
-typedef int8_t nmem_flags_t;
+typedef int8_t ntmem_flags_t;
 
 typedef struct nttunnel nttunnel_t;
 
 struct ntmem {
-	nmem_flags_t flags;
+	ntmem_flags_t flags;
 
 	size_t length;
 	void *remote_mem;
@@ -57,7 +57,6 @@ struct ntmem {
 #define NTM_SET_LENGTH(ntmem, set_length) (ntmem->length = (set_length))
 
 #define NTM_CALC_LOCALS_SIZE(length) (length * 2 * sizeof(int8_t))
-#define NTM_LOCALS_SIZE(ntmem) (NTM_CALC_LOCALS_SIZE(ntmem->length))
 #define NTM_CALC_STRUCT_SIZE(length) \
 	(sizeof(ntmem_t) + NTM_CALC_LOCALS_SIZE(length))
 #define NTM_STRUCT_SIZE(ntmem) (NTM_CALC_STRUCT_SIZE(ntmem->length))
@@ -74,11 +73,8 @@ typedef struct ntmem ntmem_t;
 
 #define NTMEM_ALLOC_ERROR 0x9201
 #define NTMEM_NTU_MALLOC_ERROR 0x9202
-#define NTMEM_NTU_MEMSET_ERROR 0x9203
-#define NTMEM_PUSH_WITH_TUNNEL_ERROR 0x9204
-#define NTMEM_PUSH_WITH_MEMSET_ERROR 0x9205
-#define NTM_ALLOC_REMOTE_ERROR 0x9206
-#define NTM_RESET_ERROR 0x9207
+#define NTMEM_NTM_RESET_REMOTE_ERROR 0x9203
+#define NTM_ALLOC_REMOTE_ERROR 0x9204
 
 #define NTMEM_ERROR_E NTMEM_PUSH_WITH_MEMSET_ERROR
 
@@ -106,13 +102,19 @@ void ntm_disable_safe_write(ntmem_t *ntmem);
  */
 bool ntm_is_safe_write(ntmem_t *ntmem);
 
+void *ntm_reset_locals(ntmem_t *ntmem);
+
+void *ntm_reset_remote_ex(ntmem_t *ntmem, size_t length);
+
+void *ntm_reset_remote(ntmem_t *ntmem);
+
 nerror_t ntm_reset(ntmem_t *ntmem);
 
 void *ntm_alloc_remote(ntmem_t *ntmem);
 
 void ntm_free_remote(ntmem_t *ntmem);
 
-nerror_t ntm_alloc_and_reset(ntmem_t *ntmem);
+void *ntm_alloc_remote_and_reset(ntmem_t *ntmem);
 
 /**
  * @brief Create and initialize a new memory structure with specific length.

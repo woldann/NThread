@@ -41,16 +41,33 @@ bool ntm_is_safe_write(ntmem_t *ntmem)
 	return (ntmem->flags & NTMEM_SAFE_WRITE) != 0;
 }
 
+void *ntm_reset_locals(ntmem_t *ntmem)
+{
+  void *local = NTM_LOCAL(ntmem);
+	memset(local, 0, NTM_CALC_LOCALS_SIZE(NTM_LENGTH(ntmem)));
+  return local;
+}
+
+void *ntm_reset_remote_ex(ntmem_t *ntmem, size_t length)
+{
+  void *remote = NTM_REMOTE(ntmem);
+	if (ntu_memset(remote, 0, length) == NULL)
+		return NULL;
+
+  return remote;
+}
+
+void *ntm_reset_remote(ntmem_t *ntmem)
+{
+  return ntm_reset_remote_ex(ntmem, NTM_LENGTH(ntmem));
+}
+
 nerror_t ntm_reset(ntmem_t *ntmem)
 {
-	size_t len = NTM_LENGTH(ntmem);
+  if (ntm_reset_remote(ntmem) == NULL)
+    return GET_ERR(NTMEM_NTM_RESET_REMOTE_ERROR);
 
-	if (ntu_memset(NTM_REMOTE(ntmem), 0, len) == NULL)
-		return GET_ERR(NTMEM_NTU_MEMSET_ERROR);
-
-	void *local = NTM_LOCAL(ntmem);
-
-	memset(local, 0, NTM_CALC_LOCALS_SIZE(len));
+  ntm_reset_locals(ntmem);
 	return N_OK;
 }
 
@@ -70,17 +87,18 @@ void ntm_free_remote(ntmem_t *ntmem)
 	}
 }
 
-nerror_t ntm_alloc_and_reset(ntmem_t *ntmem)
+void *ntm_alloc_remote_and_reset(ntmem_t *ntmem)
 {
-	if (ntm_alloc_remote(ntmem) == NULL)
-    return GET_ERR(NTM_ALLOC_REMOTE_ERROR);
+	void *remote = ntm_alloc_remote(ntmem);
+  if (remote == NULL)
+    return NULL;
 
   if (HAS_ERR(ntm_reset(ntmem))) {
     ntm_free_remote(ntmem);
-    return GET_ERR(NTM_RESET_ERROR);
+    return NULL;
   }
 
-  return N_OK;
+  return remote;
 }
 
 ntmem_t *ntm_create_ex(size_t length)
@@ -104,7 +122,7 @@ ntmem_t *ntm_create_with_alloc_ex(size_t length)
   if (ntmem == NULL)
     return NULL;
 
-  if (HAS_ERR(ntm_alloc_and_reset(ntmem))) {
+  if (ntm_alloc_remote_and_reset(ntmem) == NULL) {
     ntm_delete_and_free(ntmem);
     return NULL;
   }

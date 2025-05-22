@@ -61,6 +61,9 @@
 #define NTUTILS_NTU_MEMSET_ERROR 0x7346
 #define NTUTILS_NTU_WRITE_WITH_MEMSET_ERROR 0x7347
 #define NTUTILS_NTU_WRITE_WITH_MEMSET_DEST_ERROR 0x7348
+#define NTUTILS_NTM_CREATE_EX_ERROR 0x7349
+#define NTUTILS_NTM_RESET_REMOTE_EX_ERROR 0x734A
+#define NTUTILS_NTM_PUSH_ERROR 0x734B
 
 #define NTUTILS_FUNC_INIT_ERROR 0x7350
 #define NTUTILS_FUNC_INIT_ERROR_E (NTUTILS_FUNC_INIT_ERROR + 7)
@@ -84,6 +87,7 @@ struct ntutils {
 	ntucc_t sel_cc;
 
 	nttunnel_t nttunnel;
+  ntmem_t *stack_helper;
 
 	nthread_t nthread;
 };
