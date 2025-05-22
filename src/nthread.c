@@ -36,6 +36,11 @@ ntid_t nthread_get_id(nthread_t *nthread)
 
 #endif /* ifdef __WIN32 */
 
+static void *nthread_calc_stack(void *rsp)
+{
+	return rsp + (16 - ((int64_t)(rsp) % 16));
+}
+
 nerror_t nthread_init(nthread_t *nthread, ntid_t thread_id,
 		      nthread_reg_offset_t push_reg_offset, void *push_addr,
 		      void *sleep_addr)
@@ -89,7 +94,9 @@ nthread_init_destroy_n_exit:
 	nthread->n_ctx.ContextFlags = CONTEXT_INTEGER | CONTEXT_CONTROL;
 
 	NTHREAD_SET_REG(nthread, NTHREAD_RIP, push_addr);
-	NTHREAD_SET_REG(nthread, NTHREAD_RSP, rsp + NTHREAD_STACK_ADD);
+
+	void *new_rsp = nthread_calc_stack(rsp + NTHREAD_STACK_ADD);
+	NTHREAD_SET_REG(nthread, NTHREAD_RSP, new_rsp);
 	NTHREAD_SET_REG(nthread, push_reg_offset, sleep_addr);
 
 #endif /* ifdef __WIN32 */
@@ -143,7 +150,8 @@ void nthread_destroy(nthread_t *nthread)
 
 void *nthread_stack_begin(nthread_t *nthread)
 {
-	return NTHREAD_GET_OREG(nthread, NTHREAD_RSP) + NTHREAD_STACK_ADD;
+	void *rsp = NTHREAD_GET_OREG(nthread, NTHREAD_RSP) + NTHREAD_STACK_ADD;
+	return nthread_calc_stack(rsp);
 }
 
 nerror_t nthread_suspend(nthread_t *nthread)
