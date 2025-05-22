@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
 	int thread_id = atoi(thread_id_str);
 	if (thread_id < 0) {
 #ifdef LOG_LEVEL_1
-		LOG_INFO("Invalid thread_id: must be greater than 0");
+		LOG_ERROR("Invalid thread_id: must be greater than 0");
 #endif /* ifdef LOG_LEVEL_1 */
 
 		neptune_destroy();
@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
 	HMODULE kernel32 = GetModuleHandleA("kernel32");
 	if (kernel32 == NULL) {
 #ifdef LOG_LEVEL_1
-		LOG_INFO("GetModuleHandleA failed");
+		LOG_ERROR("GetModuleHandleA failed");
 #endif /* ifdef LOG_LEVEL_1 */
 
 		neptune_destroy();
@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
 	void *load_library_func = GetProcAddress(kernel32, "LoadLibraryW");
 	if (load_library_func == NULL) {
 #ifdef LOG_LEVEL_1
-		LOG_INFO("GetProcAddress failed");
+		LOG_ERROR("GetProcAddress failed");
 #endif /* ifdef LOG_LEVEL_1 */
 
 		return 0x21;
@@ -186,7 +186,10 @@ int main(int argc, char *argv[])
 	// This is used to suspend the thread safely.
 	sleep_addr = find_exec_gadget(0xfeeb); // jmp $
 	if (sleep_addr == NULL) {
-		LOG_INFO("Failed to locate a jmp $ gadget.");
+#ifdef LOG_LEVEL_1
+		LOG_ERROR("Failed to locate a jmp $ gadget.");  
+#endif /* ifdef LOG_LEVEL_1 */
+
 		neptune_destroy();
 		return 0x40;
 	}
@@ -218,7 +221,11 @@ int main(int argc, char *argv[])
 
 	push_addr = find_exec_gadget(0xc357); // push rdi
 	if (push_addr == NULL) {
-		LOG_INFO("Not found: executable push gadget.");
+
+#ifdef LOG_LEVEL_1
+		LOG_ERROR("Not found: executable push gadget.");
+#endif /* ifdef LOG_LEVEL_1 */
+
 		neptune_destroy();
 		return 0x41;
 	}
@@ -234,7 +241,11 @@ push_addr_found:
 	// Initialize the ntutils layer for working on the target thread.
 	if (HAS_ERR(ntu_init_ex(thread_id, push_offset, push_addr,
 				sleep_addr))) {
-		LOG_INFO("ntu_init_ex failed");
+
+#ifdef LOG_LEVEL_1
+		LOG_ERROR("ntu_init_ex failed");
+#endif /* ifdef LOG_LEVEL_1 */
+
 		neptune_destroy();
 		return 0x05;
 	}
@@ -245,12 +256,17 @@ push_addr_found:
 	int wide_len = MultiByteToWideChar(CP_UTF8, 0, dll_path, dll_path_len,
 					   NULL, 0);
 
-	ntmem_t *ntmem = ntm_create_with_alloc_ex((wide_len + 1) * sizeof(wchar_t));
+  size_t dll_path_size = NFILE_PATH_CALC_SIZE(dll_path_len);
+
+	ntmem_t *ntmem = ntm_create_with_alloc_ex(dll_path_size);
 	if (ntmem == NULL) {
-		LOG_INFO("ntm_create failed");
+#ifdef LOG_LEVEL_1
+		LOG_ERROR("ntm_create failed");
+#endif /* ifdef LOG_LEVEL_1 */
+
 		ntu_destroy();
 		neptune_destroy();
-		return 0x90;
+		return 0x92;
 	}
 
 	// Copy the converted string into memory that will be pushed to the target.
@@ -262,10 +278,13 @@ push_addr_found:
 	// Push the DLL path into the remote memory.
 	void *dll_path_addr = ntm_push(ntmem);
 	if (dll_path_addr == NULL) {
-		LOG_INFO("ntm_push failed");
+#ifdef LOG_LEVEL_1
+		LOG_ERROR("ntm_push failed");
+#endif /* ifdef LOG_LEVEL_1 */
+
 		ntu_destroy();
 		neptune_destroy();
-		return 0x91;
+		return 0x93;
 	}
 
 #ifdef LOG_LEVEL_1
@@ -275,9 +294,12 @@ push_addr_found:
 	// Call LoadLibraryW inside the target thread context.
 	void *load_library_ret = ntu_ucall(load_library_func, dll_path_addr);
 
+#ifdef LOG_LEVEL_1
 	LOG_INFO("Return Value(%p)", load_library_ret);
+#endif /* ifdef LOG_LEVEL_1 */
 
 	ntm_delete(ntmem);
+
 	ntu_destroy();
 	neptune_destroy();
 	return EXIT_SUCCESS;
