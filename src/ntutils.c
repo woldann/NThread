@@ -119,20 +119,19 @@ ntutils_t *_ntu_o(ntucc_t cc)
 
 void *ntu_get_libc_base()
 {
-  void *ret;
+	void *ret;
 
 #ifdef __WIN32
 
 	ret = (void *)GetModuleHandleA("msvcrt");
-  if (ret == NULL) {
-
+	if (ret == NULL) {
 #ifdef LOG_LEVEL_1
-    LOG_INFO("msvcrt.dll not found, loading dynamically...");
+		LOG_INFO("msvcrt.dll not found, loading dynamically...");
 #endif /* ifdef LOG_LEVEL_1 */
 
-    LoadLibraryA("msvcrt");
-	  ret = (void *)GetModuleHandleA("msvcrt");
-  }
+		LoadLibraryA("msvcrt");
+		ret = (void *)GetModuleHandleA("msvcrt");
+	}
 
 #endif /* ifdef __WIN32 */
 
@@ -223,7 +222,7 @@ nerror_t ntu_init_ex(ntid_t thread_id, nthread_reg_offset_t push_reg_offset,
 	RET_ERR(ntu_set(ntutils));
 	ntu_set_default_cc();
 
-  ntutils->stack_helper = NULL;
+	ntutils->stack_helper = NULL;
 	ntutils->nthread.thread = NULL;
 
 	ret = nthread_init(&ntutils->nthread, thread_id, push_reg_offset,
@@ -232,17 +231,17 @@ nerror_t ntu_init_ex(ntid_t thread_id, nthread_reg_offset_t push_reg_offset,
 	if (HAS_ERR(ret))
 		goto ntu_init_error_exit;
 
-  ntutils->stack_helper = ntm_create_ex(255 * sizeof(void*));
-  if (ntutils->stack_helper == NULL) {
-    ret = GET_ERR(NTUTILS_NTM_CREATE_EX_ERROR);
-    goto ntu_init_error_exit;
-  }
+	ntutils->stack_helper = ntm_create_ex(255 * sizeof(void *));
+	if (ntutils->stack_helper == NULL) {
+		ret = GET_ERR(NTUTILS_NTM_CREATE_EX_ERROR);
+		goto ntu_init_error_exit;
+	}
 
 	ret = ntt_init(NTU_NTTUNNEL_EX(ntutils));
 	if (HAS_ERR(ret)) {
 ntu_init_error_exit:
 		ntu_destroy();
-  }
+	}
 
 	return ret;
 }
@@ -262,8 +261,8 @@ void ntu_destroy()
 	if (ntutils->nthread.thread != NULL) {
 		ntt_destroy(NTU_NTTUNNEL_EX(ntutils));
 
-    if(ntutils->stack_helper != NULL)
-      ntm_delete(ntutils->stack_helper);
+		if (ntutils->stack_helper != NULL)
+			ntm_delete(ntutils->stack_helper);
 
 		nthread_destroy(&ntutils->nthread);
 	}
@@ -385,44 +384,45 @@ nerror_t ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count, va_list args)
 		 sel_cc, NTHREAD_GET_ID(nthread), arg_count, args);
 #endif /* ifdef LOG_LEVEL_3 */
 
-  int8_t reg_arg_count = 0;
-  for (int8_t i = 0; i < 8; i++) {
+	int8_t reg_arg_count = 0;
+	for (int8_t i = 0; i < 8; i++) {
 		int8_t reg_index = NTUCC_GET_ARG(sel_cc, i);
-    if (reg_index != 0)
-      reg_arg_count++;
-  }
+		if (reg_index != 0)
+			reg_arg_count++;
+	}
 
-  if (reg_arg_count > arg_count)
-    reg_arg_count = arg_count;
+	if (reg_arg_count > arg_count)
+		reg_arg_count = arg_count;
 
-  uint8_t push_arg_count = arg_count - reg_arg_count;
-  bool need_push = push_arg_count > 0;
- 
+	uint8_t push_arg_count = arg_count - reg_arg_count;
+	bool need_push = push_arg_count > 0;
+
 	void *rsp = nthread_stack_begin(nthread);
 	void *wpos = rsp + NTUCC_GET_STACK_ADD(sel_cc);
 
-  void **push_args;
-  ntmem_t *ntmem;
-  if (need_push) {
-    LOG_INFO("push_arg_count=%d %p", push_arg_count, rsp);
-    ntmem = ntutils->stack_helper;
-    NTM_SET_REMOTE(ntmem, wpos);
+	void **push_args;
+	ntmem_t *ntmem;
+	if (need_push) {
+		LOG_INFO("push_arg_count=%d %p", push_arg_count, rsp);
+		ntmem = ntutils->stack_helper;
+		NTM_SET_REMOTE(ntmem, wpos);
 
-    if (ntm_reset_remote_ex(ntmem, push_arg_count * sizeof(void *)) == NULL)
-      return GET_ERR(NTUTILS_NTM_RESET_REMOTE_EX_ERROR);
+		if (ntm_reset_remote_ex(ntmem, push_arg_count *
+						       sizeof(void *)) == NULL)
+			return GET_ERR(NTUTILS_NTM_RESET_REMOTE_EX_ERROR);
 
-    push_args = (void **) ntm_reset_locals(ntmem);
-  }
+		push_args = (void **)ntm_reset_locals(ntmem);
+	}
 	uint8_t push_arg_pos;
 
 	void *reg_args[8];
 	nthread_reg_offset_t reg_offsets[8];
 
-  bool reverse = (sel_cc & NTUCC_REVERSE_OP) != 0;
-  if (reverse)
-    push_arg_pos = push_arg_count - 1;
-  else
-    push_arg_pos = 0;
+	bool reverse = (sel_cc & NTUCC_REVERSE_OP) != 0;
+	if (reverse)
+		push_arg_pos = push_arg_count - 1;
+	else
+		push_arg_pos = 0;
 
 	for (uint8_t i = 0; i < arg_count; i++) {
 		void *arg = va_arg(args, void *);
@@ -434,15 +434,15 @@ nerror_t ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count, va_list args)
 			}
 		}
 
-    push_args[push_arg_pos] = arg;
-    if (reverse)
-      push_arg_pos--;
-    else
-      push_arg_pos++;
-  }
+		push_args[push_arg_pos] = arg;
+		if (reverse)
+			push_arg_pos--;
+		else
+			push_arg_pos++;
+	}
 
-  if (need_push && ntm_push(ntmem) == NULL)
-    return GET_ERR(NTUTILS_NTM_PUSH_ERROR);
+	if (need_push && ntm_push(ntmem) == NULL)
+		return GET_ERR(NTUTILS_NTM_PUSH_ERROR);
 
 	ntu_set_reg_args(ntutils, arg_count, reg_args);
 	return N_OK;

@@ -174,8 +174,8 @@ nerror_t ntt_init_ex(nttunnel_t *nttunnel, nttunnel_fschan_flags_t flags)
 
 	memset(nttunnel, 0, sizeof(nttunnel_t));
 
-	nttunnel->ntmem = ntm_create_with_alloc_ex(NFILE_MAX_PATH_SIZE +
-					NTTUNNEL_FSCHAN_MAX_MODE_SIZE);
+	nttunnel->ntmem = ntm_create_with_alloc_ex(
+		NFILE_MAX_PATH_SIZE + NTTUNNEL_FSCHAN_MAX_MODE_SIZE);
 
 	if (nttunnel->ntmem == NULL)
 		return GET_ERR(NTTUNNEL_NTM_CREATE_WITH_ALLOC_EX_ERROR);

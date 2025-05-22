@@ -87,7 +87,7 @@ struct ntutils {
 	ntucc_t sel_cc;
 
 	nttunnel_t nttunnel;
-  ntmem_t *stack_helper;
+	ntmem_t *stack_helper;
 
 	nthread_t nthread;
 };
