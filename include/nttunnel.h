@@ -40,11 +40,6 @@
 #define __NTTUNNEL_H__
 
 #include "neptune.h"
-
-#ifdef __WIN32
-#define NTUTILS_SFILE_MAX_PATH_LENGTH MAX_PATH
-#endif // __WIN32
-
 #include "nfile.h"
 
 #define NTTUNNEL_FSCHAN_MAX_TRANSFER_256 0x00

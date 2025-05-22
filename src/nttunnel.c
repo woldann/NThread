@@ -106,12 +106,12 @@ nerror_t _ntt_init_fschan(nttunnel_t *nttunnel, nttunnel_fschan_t *fschan,
 	} else
 		fschan->path = NULL;
 
-#ifdef LOG_LEVEL_3
+#ifdef LOG_LEVEL_2
 #ifdef __WIN32
 	LOG_INFO("ntt_fschan_init(path=%ls, mode=%ls, flags(%02x)", local,
 		 local + temp_path_size, flags);
 #endif /* ifdef __WIN32 */
-#endif /* ifdef LOG_LEVEL_3 */
+#endif /* ifdef LOG_LEVEL_2 */
 
 	if (read)
 		fschan->local_file = nfile_open_r(local);
@@ -176,6 +176,7 @@ nerror_t ntt_init_ex(nttunnel_t *nttunnel, nttunnel_fschan_flags_t flags)
 
 	nttunnel->ntmem = ntm_create_ex(NFILE_MAX_PATH_SIZE +
 					NTTUNNEL_FSCHAN_MAX_MODE_SIZE);
+
 	if (nttunnel->ntmem == NULL)
 		return GET_ERR(NTTUNNEL_NTM_CREATE_ERROR);
 

@@ -119,17 +119,22 @@ ntutils_t *_ntu_o(ntucc_t cc)
 
 void *ntu_get_libc_base()
 {
+  void *ret;
+
 #ifdef __WIN32
-	void *ret = (void *)GetModuleHandleA("ucrtbase");
+
+	ret = (void *)GetModuleHandleA("ucrtbase");
+
 #ifdef LOG_LEVEL_1
 
 	if (ret == NULL) {
-		ret = (void *)GetModuleHandleA("msvcrt");
+	  ret = (void *)GetModuleHandleA("msvcrt");
 		LOG_WARN(
 			"'ucrbase.dll' not found, attempting to use 'msvcrt.dll' as fallback.");
 	}
 
 #endif /* ifndef LOG_LEVEL_1 */
+
 #endif /* ifdef __WIN32 */
 
 	return ret;

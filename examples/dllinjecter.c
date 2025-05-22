@@ -268,6 +268,10 @@ push_addr_found:
 		return 0x91;
 	}
 
+#ifdef LOG_LEVEL_1
+  LOG_INFO("DLL Path Address(%p)", dll_path_addr);
+#endif /* ifdef LOG_LEVEL_1 */
+
 	// Call LoadLibraryW inside the target thread context.
 	void *load_library_ret = ntu_ucall(load_library_func, dll_path_addr);
 
