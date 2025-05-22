@@ -85,13 +85,6 @@ struct ntutils {
 
 	nttunnel_t nttunnel;
 
-#ifdef __WIN32
-
-	DWORD temp_path_len;
-	void *temp_path_addr;
-
-#endif /* ifdef __WIN32 */
-
 	nthread_t nthread;
 };
 
@@ -179,7 +172,7 @@ nerror_t ntu_init(ntid_t thread_id, void *push_addr, void *sleep_addr);
  */
 void ntu_destroy();
 
-void ntu_set_reg_args(ntutils_t *ntutils, void **args);
+void ntu_set_reg_args(ntutils_t *ntutils, uint8_t arg_count, void **args);
 
 nerror_t ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count, va_list args);
 

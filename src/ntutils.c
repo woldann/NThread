@@ -247,9 +247,6 @@ void ntu_destroy()
 		return;
 
 	if (ntutils->nthread.thread != NULL) {
-		if (ntutils->temp_path_addr != NULL)
-			ntu_free(ntutils->temp_path_addr);
-
 		ntt_destroy(NTU_NTTUNNEL_EX(ntutils));
 
 		nthread_destroy(&ntutils->nthread);
@@ -335,7 +332,7 @@ nerror_t ntu_write_with_memset(void *dest, const void *source, size_t length)
 	return N_OK;
 }
 
-void ntu_set_reg_args(ntutils_t *ntutils, void **args)
+void ntu_set_reg_args(ntutils_t *ntutils, uint8_t arg_count, void **args)
 {
 	nthread_t *nthread = &ntutils->nthread;
 
@@ -345,7 +342,7 @@ void ntu_set_reg_args(ntutils_t *ntutils, void **args)
 	ntucc_t sel_cc = ntutils->sel_cc;
 #endif /* ifndef NTU_GLOBAL_CC */
 
-	for (int8_t i = 0; i < 8; i++) {
+	for (int8_t i = 0; i < 8 && i < arg_count; i++) {
 		int8_t reg_index = NTUCC_GET_ARG(sel_cc, i);
 		if (reg_index == 0)
 			continue;
@@ -441,7 +438,7 @@ nerror_t ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count, va_list args)
 	} else
 		va_end(args_copy);
 
-	ntu_set_reg_args(ntutils, reg_args);
+	ntu_set_reg_args(ntutils, arg_count, reg_args);
 	return N_OK;
 }
 

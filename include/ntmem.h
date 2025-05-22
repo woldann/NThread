@@ -56,10 +56,10 @@ struct ntmem {
 #define NTM_LENGTH(ntmem) (ntmem->length)
 #define NTM_SET_LENGTH(ntmem, set_length) (ntmem->length = (set_length))
 
-#define NTM_CALC_LOCAL_SIZE(length) (length * 2 * sizeof(int8_t))
-#define NTM_LOCAL_SIZE(ntmem) (NTM_CALC_LOCAL_SIZE(ntmem->length))
+#define NTM_CALC_LOCALS_SIZE(length) (length * 2 * sizeof(int8_t))
+#define NTM_LOCALS_SIZE(ntmem) (NTM_CALC_LOCALS_SIZE(ntmem->length))
 #define NTM_CALC_STRUCT_SIZE(length) \
-	(sizeof(ntmem_t) + NTM_CALC_LOCAL_SIZE(length))
+	(sizeof(ntmem_t) + NTM_CALC_LOCALS_SIZE(length))
 #define NTM_STRUCT_SIZE(ntmem) (NTM_CALC_STRUCT_SIZE(ntmem->length))
 
 #define NTM_SET_REMOTE(ntmem, set_remote_mem) \

@@ -43,16 +43,18 @@ bool ntm_is_safe_write(ntmem_t *ntmem)
 
 nerror_t ntm_init(ntmem_t *ntmem)
 {
-	void *mem = NTM_LOCAL(ntmem);
+	void *local = NTM_LOCAL(ntmem);
 	size_t len = NTM_LENGTH(ntmem);
 
-	memset(mem, 0, NTM_LOCAL_SIZE(ntmem));
+	memset(local, 0, NTM_LOCALS_SIZE(ntmem));
 
 	NTM_SET_REMOTE(ntmem, ntu_malloc(len));
-	if (NTM_REMOTE(ntmem) == NULL)
+
+  void *remote = NTM_REMOTE(ntmem);
+	if (remote == NULL)
 		return GET_ERR(NTMEM_NTU_MALLOC_ERROR);
 
-	if (ntu_memset(NTM_REMOTE(ntmem), 0, len) == NULL) {
+	if (ntu_memset(remote, 0, len) == NULL) {
 		ntm_destroy(ntmem);
 		return GET_ERR(NTMEM_NTU_MEMSET_ERROR);
 	}
@@ -154,7 +156,7 @@ void *ntm_push_with_tunnel(ntmem_t *ntmem, nttunnel_t *nttunnel)
 	return ntm_push_with_tunnel_ex(ntmem, nttunnel, 0, NTM_LENGTH(ntmem));
 }
 
-static void *ntm_push_with_memset_dest(ntmem_t *ntmem, size_t begin, size_t len)
+static void *ntm_push_with_memset_ex(ntmem_t *ntmem, size_t begin, size_t len)
 {
 #ifdef LOG_LEVEL_3
 	LOG_INFO("ntm_push_with_memset(ntmem=%p, begin=%d, len=%d)", ntmem,
@@ -180,7 +182,7 @@ static void *ntm_push_with_memset_dest(ntmem_t *ntmem, size_t begin, size_t len)
 
 void *ntm_push_with_memset(ntmem_t *ntmem)
 {
-	return ntm_push_with_memset_dest(ntmem, 0, NTM_LENGTH(ntmem));
+	return ntm_push_with_memset_ex(ntmem, 0, NTM_LENGTH(ntmem));
 }
 
 size_t _find_diff_rev(void *mem1, void *mem2, size_t len)
@@ -226,7 +228,7 @@ void *ntm_push_ex(ntmem_t *ntmem, nttunnel_t *nttunnel)
 		size_t l = el - sl + 1;
 
 		if (b || l < 3) {
-			if (ntm_push_with_memset_dest(ntmem, sl, l) == NULL)
+			if (ntm_push_with_memset_ex(ntmem, sl, l) == NULL)
 				return NULL;
 		} else if (ntm_push_with_tunnel_ex(ntmem, nttunnel, sl, l) ==
 			   NULL)
