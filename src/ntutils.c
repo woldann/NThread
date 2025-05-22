@@ -123,17 +123,16 @@ void *ntu_get_libc_base()
 
 #ifdef __WIN32
 
-	ret = (void *)GetModuleHandleA("ucrtbase");
+	ret = (void *)GetModuleHandleA("msvcrt");
+  if (ret == NULL) {
 
 #ifdef LOG_LEVEL_1
+    LOG_INFO("msvcrt.dll not found, loading dynamically...");
+#endif /* ifdef LOG_LEVEL_1 */
 
-	if (ret == NULL) {
+    LoadLibraryA("msvcrt");
 	  ret = (void *)GetModuleHandleA("msvcrt");
-		LOG_WARN(
-			"'ucrbase.dll' not found, attempting to use 'msvcrt.dll' as fallback.");
-	}
-
-#endif /* ifndef LOG_LEVEL_1 */
+  }
 
 #endif /* ifdef __WIN32 */
 
