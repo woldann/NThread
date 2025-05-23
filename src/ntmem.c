@@ -126,7 +126,6 @@ ntmem_t *ntm_create_with_alloc_ex(size_t length)
 		ntm_delete_and_free(ntmem);
 		return NULL;
 	}
-
 	return ntmem;
 }
 
@@ -228,13 +227,12 @@ static void *ntm_push_with_memset_ex(ntmem_t *ntmem, size_t begin, size_t len)
 	void *local = NTM_LOCAL(ntmem) + begin;
 	void *local_cpy = NTM_LOCAL_CPY(ntmem) + begin;
 
-	void *last_dest;
 	if (ntm_is_safe_write(ntmem)) {
 		if (HAS_ERR(ntu_write_with_memset(remote, local, len)))
 			return NULL;
 	} else {
 		if (HAS_ERR(ntu_write_with_memset_dest(remote, local, len,
-						       last_dest)))
+						       local_cpy)))
 			return NULL;
 	}
 
