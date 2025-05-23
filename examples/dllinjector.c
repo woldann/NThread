@@ -32,7 +32,14 @@
 
 #include "ntutils.h"
 #include "ntmem.h"
+#include "nmem.h"
+
 #include <psapi.h>
+#include <tlhelp32.h>
+
+nthread_reg_offset_t push_offset;
+void *push_addr;
+void *sleep_addr;
 
 int64_t get_executable_len(void *addr)
 {
@@ -58,7 +65,120 @@ int64_t get_executable_len(void *addr)
 #endif /* ifdef __WIN32 */
 }
 
+#define CREATE_TOOL_HELP_ERROR 0x2001
+#define THREAD32_FIRST_ERROR 0x2002
+#define NTU_UPGRADE_ERROR 0x2003
+#define WAIT_FOR_SINGLE_OBJECT_ERROR 0x2004
+#define NTHREAD_NOT_FOUND_ERROR 0x2005
+#define ALLOC_ERROR 0x2006
 
+NMUTEX mutex;
+
+struct aat_args_helper {
+  nthread_t nthread;
+  ntid_t ntid;
+};
+
+void attach_all_threads_helper(void *arg)
+{
+  struct aat_args_helper *args = (void*) arg;
+
+  nthread_init_ex(&args->nthread, args->ntid, push_offset, push_addr, sleep_addr, 2);
+}
+
+nerror_t attach_all_threads(DWORD pid)
+{
+  THREADENTRY32 te32;
+  te32.dwSize = sizeof(THREADENTRY32);
+
+  HANDLE thread_snap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+  if (thread_snap == INVALID_HANDLE_VALUE)
+    return GET_ERR(CREATE_TOOL_HELP_ERROR);
+  
+  uint32_t thread_count = 0; 
+
+if (Thread32First(thread_snap, &te32)) {
+    do {
+      if (te32.th32OwnerProcessID == pid) {
+        thread_count++;
+      }
+    } while (Thread32Next(thread_snap, &te32));
+  } else
+    return GET_ERR(THREAD32_FIRST_ERROR);
+
+  HANDLE *threads = N_ALLOC(thread_count * sizeof(HANDLE));
+  struct aat_args_helper *args_helpers = N_ALLOC(thread_count * sizeof(struct aat_args_helper));
+
+  if (threads == NULL || args_helpers == NULL)
+    return GET_ERR(ALLOC_ERROR);
+
+  int32_t created_thread_count = 0;
+
+  if (Thread32First(thread_snap, &te32)) {
+    do {
+      if (te32.th32OwnerProcessID == pid) {
+        ntid_t tid = te32.th32ThreadID;
+
+        struct aat_args_helper *args = args_helpers + created_thread_count;
+        args->ntid = tid;
+        args->nthread.thread = NULL;
+
+        threads[created_thread_count] = CreateThread(NULL, 0, (void *) attach_all_threads_helper, (void *) args, 0, NULL);
+        if (threads[created_thread_count] != NULL)
+          created_thread_count++;
+      }
+    } while (Thread32Next(thread_snap, &te32));
+  } else
+    return GET_ERR(THREAD32_FIRST_ERROR);
+
+#ifdef LOG_LEVEL_1
+  LOG_INFO("Thread Count(%ld)", created_thread_count);
+#endif /* ifdef LOG_LEVEL_1 */
+
+  nthread_t *nthread = NULL;
+  bool con;
+  do {
+    con = false;
+    for (int32_t i = 0; i < created_thread_count; i++) {
+      HANDLE thread = threads[i];
+      if (thread == NULL)
+        continue;
+
+      con = true;
+      DWORD res = WaitForSingleObject(thread, 0);
+
+      if (res == WAIT_TIMEOUT)
+        continue;
+
+      if (res == WAIT_OBJECT_0) {
+        nthread_t *ret_nthread = &args_helpers[i].nthread;
+        if (ret_nthread->thread != NULL) {
+          if (nthread == NULL)
+            nthread = ret_nthread;
+          else {
+            nthread_destroy(ret_nthread);
+            N_FREE(ret_nthread);
+          }
+        }
+      }
+
+      CloseHandle(thread);
+      threads[i] = NULL;
+    }
+    Sleep(10);
+  } while (con);
+
+  N_FREE(threads);
+
+  if (nthread != NULL) {
+    if (HAS_ERR(ntu_upgrade(nthread)))
+      return GET_ERR(NTU_UPGRADE_ERROR);
+  } else
+    return GET_ERR(NTHREAD_NOT_FOUND_ERROR);
+
+  N_FREE(args_helpers);
+  return N_OK;
+}
 
 void *find_exec_gadget(uint16_t opcode_tb)
 {
@@ -125,7 +245,7 @@ int main(int argc, char *argv[])
 #ifdef __WIN32
 #ifdef LOG_LEVEL_1
 		LOG_INFO(
-			"Usage: dllinjector.exe <thread_id:int> <dll_path:string>");
+			"Usage: dllinjector.exe <thread_id:DWORD or process_id:DWORD> <dll_path:string>");
 #endif /* ifdef LOG_LEVEL_1 */
 #endif /* ifdef __WIN32 */
 
@@ -137,16 +257,19 @@ int main(int argc, char *argv[])
 #endif /* ifdef LOG_LEVEL_1 */
 
 	const char *dll_path = argv[2];
-	const char *thread_id_str = argv[1];
+	const char *id_str = argv[1];
 
 #ifdef LOG_LEVEL_1
 	LOG_INFO("DLL Path(%s)", dll_path);
 #endif /* ifdef LOG_LEVEL_1 */
 
-	int thread_id = atoi(thread_id_str);
-	if (thread_id < 0) {
+#ifdef __WIN32
+	 DWORD id = atoi(id_str);
+#endif /* ifdef __WIN32 */
+
+	if (id < 0) {
 #ifdef LOG_LEVEL_1
-		LOG_ERROR("Invalid thread_id: must be greater than 0");
+		LOG_ERROR("Invalid id: must be greater than 0");
 #endif /* ifdef LOG_LEVEL_1 */
 
 		neptune_destroy();
@@ -165,7 +288,7 @@ int main(int argc, char *argv[])
 		return 0x20;
 	}
 
-	void *load_library_func = GetProcAddress(kernel32, "LoadLibraryW");
+	void *load_library_func = GetProcAddress(kernel32, "LoadLibraryA");
 	if (load_library_func == NULL) {
 #ifdef LOG_LEVEL_1
 		LOG_ERROR("GetProcAddress failed");
@@ -175,14 +298,10 @@ int main(int argc, char *argv[])
 	}
 
 #ifdef LOG_LEVEL_1
-	LOG_INFO("LoadLibraryW=%p", load_library_func);
+	LOG_INFO("LoadLibraryA=%p", load_library_func);
 #endif /* ifdef LOG_LEVEL_1 */
 
-#endif /* ifdef __WIN32 */
-
-	nthread_reg_offset_t push_offset;
-	void *push_addr;
-	void *sleep_addr;
+#endif /* ifdef __WIN32 */	
 
 	// Locate an infinite loop gadget: 'jmp $' (opcode: 0xEBFE)
 	// This is used to suspend the thread safely.
@@ -239,28 +358,37 @@ int main(int argc, char *argv[])
 #endif /* ifdef LOG_LEVEL_1 */
 
 push_addr_found:
+  
+#ifdef LOG_LEVEL_1
+
+  LOG_INFO("Push Gadget=%p - %d", push_addr, push_offset);
+  LOG_INFO("Sleep Gadget=%p", sleep_addr);
+
+#endif /* ifdef LOG_LEVEL_1 */
 
 	// Initialize the ntutils layer for working on the target thread.
-	if (HAS_ERR(ntu_attach_ex(thread_id, push_offset, push_addr,
+	if (HAS_ERR(ntu_attach_ex(id, push_offset, push_addr,
 				sleep_addr))) {
 
 #ifdef LOG_LEVEL_1
-		LOG_ERROR("ntu_attach_ex failed");
+		LOG_WARN("ntu_attach_ex failed");
 #endif /* ifdef LOG_LEVEL_1 */
 
-		neptune_destroy();
-		return 0x05;
-	}
+    if (HAS_ERR(attach_all_threads(id))) {
+
+#ifdef LOG_LEVEL_1
+		  LOG_ERROR("attach_all_threads failed");
+#endif /* ifdef LOG_LEVEL_1 */
+
+		  neptune_destroy();
+		  return 0x06;
+    }
+	} 
 
 	size_t dll_path_len = strlen(dll_path);
+  size_t dll_path_size = dll_path_len + 1;
 
-	// Convert UTF-8 DLL path to UTF-16 since LoadLibraryW expects wide characters.
-	int wide_len = MultiByteToWideChar(CP_UTF8, 0, dll_path, dll_path_len,
-					   NULL, 0);
-
-  size_t dll_path_size = NFILE_PATH_CALC_SIZE(dll_path_len);
-
-	ntmem_t *ntmem = ntm_create_with_alloc_ex(dll_path_size);
+	ntmem_t *ntmem = ntm_create_with_alloc_ex(dll_path_size + 1);
 	if (ntmem == NULL) {
 #ifdef LOG_LEVEL_1
 		LOG_ERROR("ntm_create failed");
@@ -273,9 +401,7 @@ push_addr_found:
 
 	// Copy the converted string into memory that will be pushed to the target.
 	void *local = NTM_LOCAL(ntmem);
-	MultiByteToWideChar(CP_UTF8, 0, dll_path, dll_path_len, local,
-			    wide_len);
-	((wchar_t *)local)[wide_len] = L'\0';
+  memcpy(local, dll_path, dll_path_size);
 
 	// Push the DLL path into the remote memory.
 	void *dll_path_addr = ntm_push(ntmem);
@@ -293,7 +419,7 @@ push_addr_found:
   LOG_INFO("DLL Path Address(%p)", dll_path_addr);
 #endif /* ifdef LOG_LEVEL_1 */
 
-	// Call LoadLibraryW inside the target thread context.
+	// Call LoadLibraryA inside the target thread context.
 	void *load_library_ret = ntu_ucall(load_library_func, dll_path_addr);
 
 #ifdef LOG_LEVEL_1
