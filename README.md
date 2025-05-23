@@ -59,7 +59,7 @@ ntu_init(tid, push_sleep_addr, push_sleep_addr + 2);
 
 ### DLL Injection Example
 
-The `dllinjecter` example demonstrates how to perform DLL injection by hijacking an existing thread in the target process without using traditional remote thread creation methods. You can find the example source here: [`examples/dllinjecter.c`](examples/dllinjecter.c)
+The `dllinjector` example demonstrates how to perform DLL injection by hijacking an existing thread in the target process without using traditional remote thread creation methods. You can find the example source here: [`examples/dllinjector.c`](examples/dllinjector.c)
 
 ---
 

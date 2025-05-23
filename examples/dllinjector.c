@@ -23,7 +23,7 @@
  */
 
 /**
- * @file dllinjecter.c
+ * @file dllinjector.c
  * @brief Example application demonstrating DLL injection using the NThread library.
  *
  * This test utility performs DLL loading by hijacking an existing thread in the target process,
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 #ifdef __WIN32
 #ifdef LOG_LEVEL_1
 		LOG_INFO(
-			"Usage: dllinjecter.exe <thread_id:int> <dll_path:string>");
+			"Usage: dllinjector.exe <thread_id:int> <dll_path:string>");
 #endif /* ifdef LOG_LEVEL_1 */
 #endif /* ifdef __WIN32 */
 
