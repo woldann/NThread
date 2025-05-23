@@ -41,6 +41,12 @@ static void *nthread_calc_stack(void *rsp)
 	return rsp + (16 - ((int64_t)(rsp) % 16));
 }
 
+static void nthread_copy_ncontext(nthread_t *nthread)
+{
+	memcpy((void *)&nthread->o_ctx, (void *)&nthread->n_ctx,
+	       sizeof(CONTEXT));
+}
+
 nerror_t nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
 		      nthread_reg_offset_t push_reg_offset, void *push_addr,
 		      void *sleep_addr, uint8_t timeout_sec)
@@ -81,6 +87,8 @@ nerror_t nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
 
 #ifdef __WIN32
 
+  nthread_copy_ncontext(nthread);
+
 	void *rip = NTHREAD_GET_REG(nthread, NTHREAD_RIP);
 	void *rsp = NTHREAD_GET_REG(nthread, NTHREAD_RSP);
 	void *rvp = NTHREAD_GET_REG(nthread, push_reg_offset);
@@ -96,8 +104,13 @@ nerror_t nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
 #endif /* ifdef __WIN32 */
 
 	error_helper = nthread_set_regs(nthread);
-	if (HAS_ERR(error_helper))
-		goto nthread_init_resume_and_ret;
+	if (HAS_ERR(error_helper)) {
+nthread_init_resume_and_ret:
+		nthread_resume(nthread);
+nthread_init_destroy_and_ret:
+		nthread_destroy(nthread);
+		return error_helper;
+  }
 
 	error_helper = nthread_resume(nthread);
 	if (HAS_ERR(error_helper))
@@ -105,23 +118,14 @@ nerror_t nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
 
 	error_helper = nthread_wait(nthread);
 	if (HAS_ERR(error_helper)) {
-nthread_init_resume_and_ret:
-		nthread_resume(nthread);
-nthread_init_destroy_and_ret:
-		nthread_destroy(nthread);
-		return error_helper;
-	}
-
-#ifdef __WIN32
-
-	memcpy((void *)&nthread->o_ctx, (void *)&nthread->n_ctx,
-	       sizeof(CONTEXT));
+		goto nthread_init_destroy_and_ret;
+  }
+	
+  nthread_copy_ncontext(nthread);
 
 	NTHREAD_SET_OREG(nthread, NTHREAD_RIP, rip);
 	NTHREAD_SET_OREG(nthread, NTHREAD_RSP, rsp);
 	NTHREAD_SET_OREG(nthread, push_reg_offset, rvp);
-
-#endif /* ifdef __WIN32 */
 
 #ifdef LOG_LEVEL_2
 	LOG_INFO("nthread(%ld) succesfully created", thread_id);
