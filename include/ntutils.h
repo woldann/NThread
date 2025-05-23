@@ -66,8 +66,7 @@
 #define NTUTILS_NTM_PUSH_ERROR 0x734B
 #define NTUTILS_NTHREAD_ERROR 0x734C
 #define NTUTILS_NTU_RESIZE_ERROR 0x734D
-#define NTUTILS_NTT_INIT_ERROR 0x734E
-#define NTUTILS_NTHREAD_INIT_ERROR 0x734F
+#define NTUTILS_NTHREAD_INIT_ERROR 0x734E
 
 #define NTUTILS_FUNC_INIT_ERROR 0x7350
 #define NTUTILS_FUNC_INIT_ERROR_E (NTUTILS_FUNC_INIT_ERROR + 7)
@@ -149,6 +148,8 @@ nerror_t ntu_global_init(void);
  * @brief Clean up global ntutils resources.
  */
 void ntu_global_destroy(void);
+
+nerror_t ntu_upgrade(nthread_t *nthread);
 
 nerror_t ntu_attach_ex(ntid_t thread_id, nthread_reg_offset_t push_reg_offset,
 		       void *push_addr, void *sleep_addr);

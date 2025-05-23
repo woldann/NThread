@@ -135,10 +135,8 @@ typedef struct user_regs_struct nthread_regs_t;
 
 #endif // !__WIN32
 
-#include <stdbool.h>
-#include <stdint.h>
-
 #define NTHREAD_DEFAULT_WAIT_MS 0x00
+#define NTHREAD_DEFAULT_TIMEOUT 0x00
 
 #define NTHREAD_ERROR 0x4760
 
@@ -148,6 +146,7 @@ typedef struct user_regs_struct nthread_regs_t;
 #define NTHREAD_GET_CONTEXT_ERROR 0x4764
 #define NTHREAD_SET_CONTEXT_ERROR 0x4765
 #define NTHREAD_ERROR_INVALID_ARGS 0x4766
+#define NTHREAD_TIMEOUT_ERROR 0x4767
 
 #define NTHREAD_ERROR_E NTHREAD_ERROR_INVALID_ARGS
 
@@ -156,6 +155,7 @@ typedef struct user_regs_struct nthread_regs_t;
 typedef struct {
 	nthread_handle_t thread;
 	void *sleep_addr;
+  uint8_t timeout;
 
 	nthread_regs_t n_ctx;
 	nthread_regs_t o_ctx;
@@ -181,18 +181,11 @@ ntid_t nthread_get_id(nthread_t *nthread);
 #define NTHREAD_SET_OREG(nthread, reg, set) \
 	(((void **)(((void *)&(nthread)->o_ctx) + (reg)))[0] = (void *)(set))
 
-/**
- * @brief Initialize an NThread instance with the given thread ID and control parameters.
- *
- * @param nthread Pointer to the NThread structure to initialize.
- * @param ntid Target thread ID to operate on.
- * @param push_reg_offset Register offset to be used for pushing data to the stack.
- *        Determines which register will hold the `push_addr` value.
- * @param push_addr Address to push into the thread's context before execution.
- * @param sleep_addr Address used as a temporary sleep/pause point during hijacking.
- *
- * @return Error code indicating success or failure.
- */
+
+nerror_t nthread_init_ex(nthread_t *nthread, ntid_t ntid,
+		      nthread_reg_offset_t push_reg_offset, void *push_addr,
+		      void *sleep_addr, uint8_t timeout_sec);
+
 nerror_t nthread_init(nthread_t *nthread, ntid_t ntid,
 		      nthread_reg_offset_t push_reg_offset, void *push_addr,
 		      void *sleep_addr);
@@ -247,6 +240,8 @@ nerror_t nthread_get_regs(nthread_t *nthread);
  * @return Error code indicating success or failure.
  */
 nerror_t nthread_set_regs(nthread_t *nthread);
+
+void nthread_set_timeout(nthread_t *nthread, uint8_t timeout_sec);
 
 /**
  * @brief Wait for the thread to return from a function call, with timeout control.
