@@ -74,16 +74,9 @@ nerror_t nthread_init(nthread_t *nthread, ntid_t thread_id,
 
 	RET_ERR(nthread_suspend(nthread));
 
-	nerror_t error_helper;
-
-	error_helper = nthread_get_regs(nthread);
-	if (HAS_ERR(error_helper)) {
-nthread_init_resume_n_exit:
-		nthread_resume(nthread);
-nthread_init_destroy_n_exit:
-		nthread_destroy(nthread);
-		return error_helper;
-	}
+	nerror_t error_helper = nthread_get_regs(nthread);
+	if (HAS_ERR(error_helper))
+		goto nthread_init_resume_and_ret;
 
 #ifdef __WIN32
 
@@ -103,15 +96,20 @@ nthread_init_destroy_n_exit:
 
 	error_helper = nthread_set_regs(nthread);
 	if (HAS_ERR(error_helper))
-		goto nthread_init_resume_n_exit;
+		goto nthread_init_resume_and_ret;
 
 	error_helper = nthread_resume(nthread);
 	if (HAS_ERR(error_helper))
-		goto nthread_init_destroy_n_exit;
+		goto nthread_init_destroy_and_ret;
 
 	error_helper = nthread_wait(nthread);
-	if (HAS_ERR(error_helper))
-		goto nthread_init_destroy_n_exit;
+	if (HAS_ERR(error_helper)) {
+nthread_init_resume_and_ret:
+		nthread_resume(nthread);
+nthread_init_destroy_and_ret:
+		nthread_destroy(nthread);
+		return error_helper;
+	}
 
 #ifdef __WIN32
 

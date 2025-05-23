@@ -64,6 +64,10 @@
 #define NTUTILS_NTM_CREATE_EX_ERROR 0x7349
 #define NTUTILS_NTM_RESET_REMOTE_EX_ERROR 0x734A
 #define NTUTILS_NTM_PUSH_ERROR 0x734B
+#define NTUTILS_NTHREAD_ERROR 0x734C
+#define NTUTILS_NTU_RESIZE_ERROR 0x734D
+#define NTUTILS_NTT_INIT_ERROR 0x734E
+#define NTUTILS_NTHREAD_INIT_ERROR 0x734F
 
 #define NTUTILS_FUNC_INIT_ERROR 0x7350
 #define NTUTILS_FUNC_INIT_ERROR_E (NTUTILS_FUNC_INIT_ERROR + 7)
@@ -146,30 +150,10 @@ nerror_t ntu_global_init(void);
  */
 void ntu_global_destroy(void);
 
-/**
- * @brief Initialize an ntutils instance for a target thread with required context.
- * 
- * @param thread_id ID of the target thread.
- * @param push_reg_offset Register offset to be used for pushing data to the stack.
- *        Determines which register will hold the `push_addr` value.
- * @param push_addr Address used during argument pushing for calls.
- * @param sleep_addr Address used to pause/wait inside hijacked thread.
- * @return Error code.
- */
-nerror_t ntu_init_ex(ntid_t thread_id, nthread_reg_offset_t push_reg_offset,
-		     void *push_addr, void *sleep_addr);
+nerror_t ntu_attach_ex(ntid_t thread_id, nthread_reg_offset_t push_reg_offset,
+		       void *push_addr, void *sleep_addr);
 
-/**
- * @brief Simplified version of ntu_init_ex using the best available register for argument pushing.
- * 
- * Internally calls `ntu_init_ex` with `NTHREAD_BEST_PUSH_REG` as the push register offset.
- *
- * @param thread_id ID of the target thread.
- * @param push_addr Address used during argument pushing for calls.
- * @param sleep_addr Address used to pause/wait inside hijacked thread.
- * @return Error code.
- */
-nerror_t ntu_init(ntid_t thread_id, void *push_addr, void *sleep_addr);
+nerror_t ntu_attach(ntid_t thread_id, void *push_addr, void *sleep_addr);
 
 /**
  * @brief Destroy the current ntutils instance and release resources.

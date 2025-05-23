@@ -213,43 +213,52 @@ void ntu_global_destroy(void)
 	}
 }
 
-nerror_t ntu_init_ex(ntid_t thread_id, nthread_reg_offset_t push_reg_offset,
-		     void *push_addr, void *sleep_addr)
+nerror_t ntu_upgrade(nthread_t *nthread)
 {
-	nerror_t ret;
+	if (nthread->thread == NULL)
+		return GET_ERR(NTUTILS_NTHREAD_ERROR);
+
 	ntutils_t *ntutils = ntu_resize(sizeof(ntutils_t));
+	if (ntutils == NULL)
+		return GET_ERR(NTUTILS_NTU_RESIZE_ERROR);
 
-	RET_ERR(ntu_set(ntutils));
-	ntu_set_default_cc();
+	memcpy(&ntutils->nthread, nthread, sizeof(nthread_t));
+	nttunnel_t *nttunnel = NTU_NTTUNNEL_EX(ntutils);
 
-	ntutils->stack_helper = NULL;
-	ntutils->nthread.thread = NULL;
+	memset(nttunnel, 0, sizeof(nttunnel_t));
 
-	ret = nthread_init(&ntutils->nthread, thread_id, push_reg_offset,
-			   push_addr, sleep_addr);
-
-	if (HAS_ERR(ret))
-		goto ntu_init_error_exit;
-
+	nerror_t ret;
 	ntutils->stack_helper = ntm_create_ex(255 * sizeof(void *));
 	if (ntutils->stack_helper == NULL) {
 		ret = GET_ERR(NTUTILS_NTM_CREATE_EX_ERROR);
-		goto ntu_init_error_exit;
+		goto ntu_upgrade_error_ret;
 	}
 
-	ret = ntt_init(NTU_NTTUNNEL_EX(ntutils));
-	if (HAS_ERR(ret)) {
-ntu_init_error_exit:
+	if (HAS_ERR(ntt_init(nttunnel))) {
+		ret = GET_ERR(NTUTILS_NTT_INIT_ERROR);
+ntu_upgrade_error_ret:
 		ntu_destroy();
 	}
 
 	return ret;
 }
 
-nerror_t ntu_init(ntid_t thread_id, void *push_addr, void *sleep_addr)
+nerror_t ntu_attach_ex(ntid_t thread_id, nthread_reg_offset_t push_reg_offset,
+		       void *push_addr, void *sleep_addr)
 {
-	return ntu_init_ex(thread_id, NTHREAD_BEST_PUSH_REG, push_addr,
-			   sleep_addr);
+	nthread_t nthread;
+	if (HAS_ERR(nthread_init(&nthread, thread_id, push_reg_offset,
+				 push_addr, sleep_addr))) {
+		return GET_ERR(NTUTILS_NTHREAD_INIT_ERROR);
+	}
+
+	return ntu_upgrade(&nthread);
+}
+
+nerror_t ntu_attach(ntid_t thread_id, void *push_addr, void *sleep_addr)
+{
+	return ntu_attach_ex(thread_id, NTHREAD_BEST_PUSH_REG, push_addr,
+			     sleep_addr);
 }
 
 void ntu_destroy()
@@ -403,7 +412,6 @@ nerror_t ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count, va_list args)
 	void **push_args;
 	ntmem_t *ntmem;
 	if (need_push) {
-		LOG_INFO("push_arg_count=%d %p", push_arg_count, rsp);
 		ntmem = ntutils->stack_helper;
 		NTM_SET_REMOTE(ntmem, wpos);
 

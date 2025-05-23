@@ -58,6 +58,8 @@ int64_t get_executable_len(void *addr)
 #endif /* ifdef __WIN32 */
 }
 
+
+
 void *find_exec_gadget(uint16_t opcode_tb)
 {
 #ifdef __WIN32
@@ -239,11 +241,11 @@ int main(int argc, char *argv[])
 push_addr_found:
 
 	// Initialize the ntutils layer for working on the target thread.
-	if (HAS_ERR(ntu_init_ex(thread_id, push_offset, push_addr,
+	if (HAS_ERR(ntu_attach_ex(thread_id, push_offset, push_addr,
 				sleep_addr))) {
 
 #ifdef LOG_LEVEL_1
-		LOG_ERROR("ntu_init_ex failed");
+		LOG_ERROR("ntu_attach_ex failed");
 #endif /* ifdef LOG_LEVEL_1 */
 
 		neptune_destroy();
