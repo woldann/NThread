@@ -30,9 +30,9 @@ If the target process already contains the following instruction pattern:
 0x7f0050 0xEB 0xFE     jmp $
 ```
 
-You can locate such an address and use it directly with `ntu_init`:
+You can locate such an address and use it directly with `ntu_attach`:
 ```c
-ntu_init(tid, existing_push_addr=0x7f0000, existing_jmp_addr=0x7f0050);
+ntu_attach(tid, existing_push_addr=0x7f0000, existing_jmp_addr=0x7f0050);
 ```
 
 Alternatively, as demonstrated in [tests/inject.c](tests/inject.c) you can allocate this code into the target process yourself:
@@ -44,22 +44,8 @@ void *push_sleep_addr = VirtualAllocEx(...);
 WriteProcessMemory(..., push_sleep_addr, push_sleep, sizeof(push_sleep));
 
 // Initialize NThread with known valid instructions
-ntu_init(tid, push_sleep_addr, push_sleep_addr + 2);
+ntu_attach(tid, push_sleep_addr, push_sleep_addr + 2);
 ```
-
----
-
-## ⚙️ Supported Platforms
-
-- Windows x64 (currently only)
-
----
-
-## Examples
-
-### DLL Injection Example
-
-The `dllinjector` example demonstrates how to perform DLL injection by hijacking an existing thread in the target process without using traditional remote thread creation methods. You can find the example source here: [`examples/dllinjector.c`](examples/dllinjector.c)
 
 ---
 
