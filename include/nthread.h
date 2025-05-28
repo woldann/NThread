@@ -155,7 +155,7 @@ typedef struct user_regs_struct nthread_regs_t;
 typedef struct {
 	nthread_handle_t thread;
 	void *sleep_addr;
-  uint8_t timeout;
+	uint8_t timeout;
 
 	nthread_regs_t n_ctx;
 	nthread_regs_t o_ctx;
@@ -191,10 +191,11 @@ ntid_t nthread_get_id(nthread_t *nthread);
 #define NTHREAD_SET_OREG(nthread, reg, set) \
 	(((void **)(((void *)&(nthread)->o_ctx) + (reg)))[0] = (void *)(set))
 
+bool nthread_is_waiting(nthread_t *nthread);
 
 nerror_t nthread_init_ex(nthread_t *nthread, ntid_t ntid,
-		      nthread_reg_offset_t push_reg_offset, void *push_addr,
-		      void *sleep_addr, uint8_t timeout_sec);
+			 nthread_reg_offset_t push_reg_offset, void *push_addr,
+			 void *sleep_addr, uint8_t timeout_sec);
 
 nerror_t nthread_init(nthread_t *nthread, ntid_t ntid,
 		      nthread_reg_offset_t push_reg_offset, void *push_addr,

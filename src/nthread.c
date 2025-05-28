@@ -34,6 +34,19 @@ ntid_t nthread_get_id(nthread_t *nthread)
 	return GetThreadId(nthread->thread);
 }
 
+bool nthread_is_waiting(nthread_t *nthread)
+{
+	if (!NTHREAD_IS_VALID(nthread))
+		return false;
+
+	void *rip = NTHREAD_GET_REG(nthread, NTHREAD_RIP);
+	if (rip != nthread->sleep_addr)
+		return false;
+
+	return nthread->n_ctx.ContextFlags ==
+	       (CONTEXT_INTEGER | CONTEXT_CONTROL);
+}
+
 #endif /* ifdef __WIN32 */
 
 static void *nthread_calc_stack(void *rsp)
@@ -48,8 +61,8 @@ static void nthread_copy_ncontext(nthread_t *nthread)
 }
 
 nerror_t nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
-		      nthread_reg_offset_t push_reg_offset, void *push_addr,
-		      void *sleep_addr, uint8_t timeout_sec)
+			 nthread_reg_offset_t push_reg_offset, void *push_addr,
+			 void *sleep_addr, uint8_t timeout_sec)
 {
 #ifdef LOG_LEVEL_1
 	LOG_INFO(
@@ -70,7 +83,7 @@ nerror_t nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
 
 	nthread->thread = thread;
 	nthread->sleep_addr = sleep_addr;
-  nthread->timeout = timeout_sec;
+	nthread->timeout = timeout_sec;
 
 #ifdef __WIN32
 
@@ -87,13 +100,11 @@ nerror_t nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
 
 #ifdef __WIN32
 
-  nthread_copy_ncontext(nthread);
+	nthread_copy_ncontext(nthread);
 
 	void *rip = NTHREAD_GET_REG(nthread, NTHREAD_RIP);
 	void *rsp = NTHREAD_GET_REG(nthread, NTHREAD_RSP);
 	void *rvp = NTHREAD_GET_REG(nthread, push_reg_offset);
-
-	nthread->n_ctx.ContextFlags = CONTEXT_INTEGER | CONTEXT_CONTROL;
 
 	NTHREAD_SET_REG(nthread, NTHREAD_RIP, push_addr);
 
@@ -110,7 +121,7 @@ nthread_init_resume_and_ret:
 nthread_init_destroy_and_ret:
 		nthread_destroy(nthread);
 		return error_helper;
-  }
+	}
 
 	error_helper = nthread_resume(nthread);
 	if (HAS_ERR(error_helper))
@@ -119,16 +130,18 @@ nthread_init_destroy_and_ret:
 	error_helper = nthread_wait(nthread);
 	if (HAS_ERR(error_helper)) {
 		goto nthread_init_destroy_and_ret;
-  }
-	
-  nthread_copy_ncontext(nthread);
+	}
 
+	nthread_copy_ncontext(nthread);
+
+	NTHREAD_SET_OREG(nthread, push_reg_offset, rvp);
 	NTHREAD_SET_OREG(nthread, NTHREAD_RIP, rip);
 	NTHREAD_SET_OREG(nthread, NTHREAD_RSP, rsp);
-	NTHREAD_SET_OREG(nthread, push_reg_offset, rvp);
+
+	nthread->n_ctx.ContextFlags = CONTEXT_INTEGER | CONTEXT_CONTROL;
 
 #ifdef LOG_LEVEL_2
-	LOG_INFO("nthread(%ld) succesfully created", thread_id);
+	LOG_INFO("NThread(%ld) succesfully created", thread_id);
 #endif /* ifdef LOG_LEVEL_2 */
 
 	return N_OK;
@@ -138,7 +151,8 @@ nerror_t nthread_init(nthread_t *nthread, ntid_t thread_id,
 		      nthread_reg_offset_t push_reg_offset, void *push_addr,
 		      void *sleep_addr)
 {
-  return nthread_init_ex(nthread, thread_id, push_reg_offset, push_addr, sleep_addr, NTHREAD_DEFAULT_TIMEOUT);
+	return nthread_init_ex(nthread, thread_id, push_reg_offset, push_addr,
+			       sleep_addr, NTHREAD_DEFAULT_TIMEOUT);
 }
 
 void nthread_destroy(nthread_t *nthread)
@@ -154,8 +168,8 @@ void nthread_destroy(nthread_t *nthread)
 
 	if (NTHREAD_IS_VALID(nthread)) {
 		CloseHandle(nthread->thread);
-    NTHREAD_SET_INVALID(nthread);
-  }
+		NTHREAD_SET_INVALID(nthread);
+	}
 
 #endif /* ifdef __WIN32 */
 }
@@ -253,22 +267,21 @@ nerror_t nthread_set_regs(nthread_t *nthread)
 }
 
 void nthread_set_timeout(nthread_t *nthread, uint8_t timeout_sec)
-{ 
-  nthread->timeout = timeout_sec;
+{
+	nthread->timeout = timeout_sec;
 }
 
 nerror_t nthread_wait_ex(nthread_t *nthread, uint32_t sleep)
 {
-  ntime_t end; 
-  uint32_t timeout_sec = nthread->timeout;
-  if (timeout_sec != 0) {
-    end = ntime_get_unix() + timeout_sec;
-    uint32_t timeout_ms = timeout_sec * 1000; 
-    if (sleep >= timeout_ms)
-      sleep = timeout_ms + 1;
-  }
-  else
-    end = 0;
+	ntime_t end;
+	uint32_t timeout_sec = nthread->timeout;
+	if (timeout_sec != 0) {
+		end = ntime_get_unix() + timeout_sec;
+		uint32_t timeout_ms = timeout_sec * 1000;
+		if (sleep >= timeout_ms)
+			sleep = timeout_ms + 1;
+	} else
+		end = 0;
 
 	while (true) {
 #ifdef __WIN32
@@ -281,11 +294,11 @@ nerror_t nthread_wait_ex(nthread_t *nthread, uint32_t sleep)
 		if (rip == nthread->sleep_addr)
 			return N_OK;
 
-    if (end > 0) {
-      ntime_t cur = ntime_get_unix();
-      if (cur >= end)
-        return GET_ERR(NTHREAD_TIMEOUT_ERROR);
-    }
+		if (end > 0) {
+			ntime_t cur = ntime_get_unix();
+			if (cur >= end)
+				return GET_ERR(NTHREAD_TIMEOUT_ERROR);
+		}
 	}
 }
 

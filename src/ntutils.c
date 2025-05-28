@@ -234,7 +234,7 @@ nerror_t ntu_upgrade(nthread_t *nthread)
 		goto ntu_upgrade_error_ret;
 	}
 
-  ret = ntt_init(nttunnel);
+	ret = ntt_init(nttunnel);
 	if (HAS_ERR(ret)) {
 ntu_upgrade_error_ret:
 		ntu_destroy();
