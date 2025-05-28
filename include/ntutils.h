@@ -97,11 +97,11 @@ struct ntutils {
 
 typedef struct ntutils ntutils_t;
 
-ntutils_t *_ntu_get(void);
+ntutils_t *NTHREAD_API _ntu_get(void);
 
-nerror_t ntu_set(ntutils_t *ntutils);
+nerror_t NTHREAD_API ntu_set(ntutils_t *ntutils);
 
-ntutils_t *ntu_resize(size_t new_size);
+ntutils_t *NTHREAD_API ntu_resize(size_t new_size);
 
 #define ntu_get() _ntu_get()
 
@@ -109,15 +109,15 @@ ntutils_t *ntu_resize(size_t new_size);
 
 #ifndef NTU_GLOBAL_CC
 
-void _ntu_set_cc(ntucc_t cc);
+void NTHREAD_API _ntu_set_cc(ntucc_t cc);
 
 #define ntu_set_cc(cc) _ntu_set_default_cc(cc)
 
-void _ntu_set_default_cc();
+void NTHREAD_API _ntu_set_default_cc();
 
 #define ntu_set_default_cc() _ntu_set_default_cc()
 
-ntutils_t *_ntu_o(ntucc_t cc);
+ntutils_t *NTHREAD_API _ntu_o(ntucc_t cc);
 
 #define ntu_o(cc) _ntu_o(cc)
 
@@ -135,37 +135,41 @@ ntutils_t *_ntu_o(ntucc_t cc);
 
 #endif // NTU_GLOBAL_CC
 
-void *ntu_get_libc_base();
+void *NTHREAD_API ntu_get_libc_base();
 
 /**
  * @brief Initialize global state for ntutils subsystem.
  * 
  * @return Error code.
  */
-nerror_t ntu_global_init(void);
+nerror_t NTHREAD_API ntu_global_init(void);
 
 /**
  * @brief Clean up global ntutils resources.
  */
-void ntu_global_destroy(void);
+void NTHREAD_API ntu_global_destroy(void);
 
-nerror_t ntu_upgrade(nthread_t *nthread);
+nerror_t NTHREAD_API ntu_upgrade(nthread_t *nthread);
 
-nerror_t ntu_attach_ex(ntid_t thread_id, nthread_reg_offset_t push_reg_offset,
-		       void *push_addr, void *sleep_addr);
+nerror_t NTHREAD_API ntu_attach_ex(ntid_t thread_id,
+				   nthread_reg_offset_t push_reg_offset,
+				   void *push_addr, void *sleep_addr);
 
-nerror_t ntu_attach(ntid_t thread_id, void *push_addr, void *sleep_addr);
+nerror_t NTHREAD_API ntu_attach(ntid_t thread_id, void *push_addr,
+				void *sleep_addr);
 
 /**
  * @brief Destroy the current ntutils instance and release resources.
  */
-void ntu_destroy();
+void NTHREAD_API ntu_destroy();
 
-void ntu_set_reg_args(ntutils_t *ntutils, uint8_t arg_count, void **args);
+void NTHREAD_API ntu_set_reg_args(ntutils_t *ntutils, uint8_t arg_count,
+				  void **args);
 
-nerror_t ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count, va_list args);
+nerror_t NTHREAD_API ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count,
+				    va_list args);
 
-nerror_t ntu_set_args(ntutils_t *ntutils, uint8_t arg_count, ...);
+nerror_t NTHREAD_API ntu_set_args(ntutils_t *ntutils, uint8_t arg_count, ...);
 
 /**
  * @brief Call a function inside the target thread with variable arguments (va_list).
@@ -176,8 +180,8 @@ nerror_t ntu_set_args(ntutils_t *ntutils, uint8_t arg_count, ...);
  * @param args Variable argument list.
  * @return Error code.
  */
-nerror_t ntu_call_v(ntutils_t *ntutils, void *func_addr, uint8_t arg_count,
-		    va_list args);
+nerror_t NTHREAD_API ntu_call_v(ntutils_t *ntutils, void *func_addr,
+				uint8_t arg_count, va_list args);
 
 /**
  * @brief Call a function inside the target thread with variadic arguments.
@@ -188,8 +192,8 @@ nerror_t ntu_call_v(ntutils_t *ntutils, void *func_addr, uint8_t arg_count,
  * @param ... Arguments to be passed to the function.
  * @return Error code.
  */
-nerror_t ntu_call(ntutils_t *ntutils, void *function_address, uint8_t arg_count,
-		  ...);
+nerror_t NTHREAD_API ntu_call(ntutils_t *ntutils, void *function_address,
+			      uint8_t arg_count, ...);
 
 /**
  * @brief Call a function with variable arguments and retrieve a return value.
@@ -199,7 +203,7 @@ nerror_t ntu_call(ntutils_t *ntutils, void *function_address, uint8_t arg_count,
  * @param args Variable argument list.
  * @return Pointer returned by the called function
  */
-void *ntu_ucall_v(void *func_addr, uint8_t arg_count, va_list args);
+void *NTHREAD_API ntu_ucall_v(void *func_addr, uint8_t arg_count, va_list args);
 
 /**
  * @brief Call a function with variadic arguments and retrieve a return value.
@@ -209,7 +213,7 @@ void *ntu_ucall_v(void *func_addr, uint8_t arg_count, va_list args);
  * @param ... Arguments to be passed.
  * @return Pointer returned by the called function
  */
-void *_ntu_ucall(void *func_addr, uint8_t arg_count, ...);
+void *NTHREAD_API _ntu_ucall(void *func_addr, uint8_t arg_count, ...);
 
 #define ntu_ucall(func_addr, ...) \
 	_ntu_ucall(func_addr, NEPTUNE_GET_ARG_COUNT(__VA_ARGS__), __VA_ARGS__)
@@ -222,7 +226,7 @@ void *_ntu_ucall(void *func_addr, uint8_t arg_count, ...);
  * @param length Number of bytes to fill.
  * @return Pointer to the destination.
  */
-void *ntu_memset(void *dest, int fill, size_t length);
+void *NTHREAD_API ntu_memset(void *dest, int fill, size_t length);
 
 /**
  * @brief Allocate memory inside the target process.
@@ -230,14 +234,14 @@ void *ntu_memset(void *dest, int fill, size_t length);
  * @param size Number of bytes to allocate.
  * @return Pointer to allocated memory.
  */
-void *ntu_malloc(size_t size);
+void *NTHREAD_API ntu_malloc(size_t size);
 
 /**
  * @brief Free previously allocated memory inside the target process.
  * 
  * @param address Pointer to memory to free.
  */
-void ntu_free(void *address);
+void NTHREAD_API ntu_free(void *address);
 
 /**
  * @brief Open a file stream inside the target process.
@@ -248,7 +252,8 @@ void ntu_free(void *address);
  *
  * @note Strings must exist in the target process memory prior to calling this function.
  */
-FILE *ntu_fopen(const nfile_path_t filename, const nfile_path_t mode);
+FILE *NTHREAD_API ntu_fopen(const nfile_path_t filename,
+			    const nfile_path_t mode);
 
 /**
  * @brief Read from a file stream into a buffer.
@@ -259,7 +264,8 @@ FILE *ntu_fopen(const nfile_path_t filename, const nfile_path_t mode);
  * @param fstream FILE pointer of the opened file stream.
  * @return Number of elements successfully read.
  */
-size_t ntu_fread(void *buffer, size_t size, size_t count, FILE *fstream);
+size_t NTHREAD_API ntu_fread(void *buffer, size_t size, size_t count,
+			     FILE *fstream);
 
 /**
  * @brief Write data from a buffer into a file stream.
@@ -270,7 +276,8 @@ size_t ntu_fread(void *buffer, size_t size, size_t count, FILE *fstream);
  * @param fstream FILE pointer of the opened file stream.
  * @return Number of elements successfully written.
  */
-size_t ntu_fwrite(const void *buffer, size_t size, size_t count, FILE *fstream);
+size_t NTHREAD_API ntu_fwrite(const void *buffer, size_t size, size_t count,
+			      FILE *fstream);
 
 /**
  * @brief Flush the file stream buffers.
@@ -278,7 +285,7 @@ size_t ntu_fwrite(const void *buffer, size_t size, size_t count, FILE *fstream);
  * @param fstream FILE pointer of the opened file stream.
  * @return 0 on success.
  */
-int ntu_fflush(FILE *fstream);
+int NTHREAD_API ntu_fflush(FILE *fstream);
 
 /**
  * @brief Close the opened file stream.
@@ -286,7 +293,7 @@ int ntu_fflush(FILE *fstream);
  * @param fstream FILE pointer to close.
  * @return 0 on success.
  */
-int ntu_fclose(FILE *fstream);
+int NTHREAD_API ntu_fclose(FILE *fstream);
 
 /**
  * @brief Allocate and copy a string into the target process memory.
@@ -294,7 +301,7 @@ int ntu_fclose(FILE *fstream);
  * @param str Source null-terminated string.
  * @return Pointer to the allocated string in target memory.
  */
-void *ntu_alloc_str(const char *str);
+void *NTHREAD_API ntu_alloc_str(const char *str);
 
 /**
  * @brief Write data to remote memory, skipping bytes equal to the given value.
@@ -308,8 +315,9 @@ void *ntu_alloc_str(const char *str);
  * @param last_value Value to skip while writing (e.g., 0x00 or 0xFF).
  * @return Error code indicating success or failure.
  */
-nerror_t ntu_write_with_memset_value(void *dest, const void *source,
-				     size_t length, int8_t last_value);
+nerror_t NTHREAD_API ntu_write_with_memset_value(void *dest, const void *source,
+						 size_t length,
+						 int8_t last_value);
 
 /**
  * @brief Write data to remote memory, skipping identical bytes by comparing with last written destination.
@@ -323,8 +331,9 @@ nerror_t ntu_write_with_memset_value(void *dest, const void *source,
  * @param last_dest Last written destination buffer for comparison (local memory, required).
  * @return Error code indicating success or failure.
  */
-nerror_t ntu_write_with_memset_dest(void *dest, const void *source,
-				    size_t length, const void *last_dest);
+nerror_t NTHREAD_API ntu_write_with_memset_dest(void *dest, const void *source,
+						size_t length,
+						const void *last_dest);
 
 /**
  * @brief Write data to remote memory using memset-based operations.
@@ -337,20 +346,23 @@ nerror_t ntu_write_with_memset_dest(void *dest, const void *source,
  * @param length Number of bytes to write.
  * @return Error code indicating success or failure.
  */
-nerror_t ntu_write_with_memset(void *dest, const void *source, size_t length);
+nerror_t NTHREAD_API ntu_write_with_memset(void *dest, const void *source,
+					   size_t length);
 
 #define NTU_NTTUNNEL_EX(ntutils) (&ntutils->nttunnel)
 #define NTU_NTTUNNEL() (ntu_nttunnel())
 
-nttunnel_t *ntu_nttunnel();
+nttunnel_t *NTHREAD_API ntu_nttunnel();
 
-bool ntu_tunnel_can_read();
+bool NTHREAD_API ntu_tunnel_can_read();
 
-bool ntu_tunnel_can_write();
+bool NTHREAD_API ntu_tunnel_can_write();
 
-nerror_t ntu_tunnel_read(const void *dest, void *source, size_t length);
+nerror_t NTHREAD_API ntu_tunnel_read(const void *dest, void *source,
+				     size_t length);
 
-nerror_t ntu_tunnel_write(void *dest, const void *source, size_t length);
+nerror_t NTHREAD_API ntu_tunnel_write(void *dest, const void *source,
+				      size_t length);
 
 #define ntu_read(...) ntu_tunnel_read(__VA_ARGS__)
 #define ntu_write(...) ntu_tunnel_write(__VA_ARGS__)

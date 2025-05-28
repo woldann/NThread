@@ -26,29 +26,29 @@
 #include "nttunnel.h"
 #include "nmem.h"
 
-void ntm_enable_safe_write(ntmem_t *ntmem)
+void NTHREAD_API ntm_enable_safe_write(ntmem_t *ntmem)
 {
 	ntmem->flags |= NTMEM_SAFE_WRITE;
 }
 
-void ntm_disable_safe_write(ntmem_t *ntmem)
+void NTHREAD_API ntm_disable_safe_write(ntmem_t *ntmem)
 {
 	ntmem->flags &= ~(NTMEM_SAFE_WRITE);
 }
 
-bool ntm_is_safe_write(ntmem_t *ntmem)
+bool NTHREAD_API ntm_is_safe_write(ntmem_t *ntmem)
 {
 	return (ntmem->flags & NTMEM_SAFE_WRITE) != 0;
 }
 
-void *ntm_reset_locals(ntmem_t *ntmem)
+void *NTHREAD_API ntm_reset_locals(ntmem_t *ntmem)
 {
 	void *local = NTM_LOCAL(ntmem);
 	memset(local, 0, NTM_CALC_LOCALS_SIZE(NTM_LENGTH(ntmem)));
 	return local;
 }
 
-void *ntm_reset_remote_ex(ntmem_t *ntmem, size_t length)
+void *NTHREAD_API ntm_reset_remote_ex(ntmem_t *ntmem, size_t length)
 {
 	void *remote = NTM_REMOTE(ntmem);
 	if (ntu_memset(remote, 0, length) == NULL)
@@ -57,12 +57,12 @@ void *ntm_reset_remote_ex(ntmem_t *ntmem, size_t length)
 	return remote;
 }
 
-void *ntm_reset_remote(ntmem_t *ntmem)
+void *NTHREAD_API ntm_reset_remote(ntmem_t *ntmem)
 {
 	return ntm_reset_remote_ex(ntmem, NTM_LENGTH(ntmem));
 }
 
-nerror_t ntm_reset(ntmem_t *ntmem)
+nerror_t NTHREAD_API ntm_reset(ntmem_t *ntmem)
 {
 	if (ntm_reset_remote(ntmem) == NULL)
 		return GET_ERR(NTMEM_NTM_RESET_REMOTE_ERROR);
@@ -71,7 +71,7 @@ nerror_t ntm_reset(ntmem_t *ntmem)
 	return N_OK;
 }
 
-void *ntm_alloc_remote(ntmem_t *ntmem)
+void *NTHREAD_API ntm_alloc_remote(ntmem_t *ntmem)
 {
 	size_t len = NTM_LENGTH(ntmem);
 
@@ -79,7 +79,7 @@ void *ntm_alloc_remote(ntmem_t *ntmem)
 	return NTM_REMOTE(ntmem);
 }
 
-void ntm_free_remote(ntmem_t *ntmem)
+void NTHREAD_API ntm_free_remote(ntmem_t *ntmem)
 {
 	if (NTM_REMOTE(ntmem) != NULL) {
 		ntu_free(NTM_REMOTE(ntmem));
@@ -87,7 +87,7 @@ void ntm_free_remote(ntmem_t *ntmem)
 	}
 }
 
-void *ntm_alloc_remote_and_reset(ntmem_t *ntmem)
+void *NTHREAD_API ntm_alloc_remote_and_reset(ntmem_t *ntmem)
 {
 	void *remote = ntm_alloc_remote(ntmem);
 	if (remote == NULL)
@@ -101,7 +101,7 @@ void *ntm_alloc_remote_and_reset(ntmem_t *ntmem)
 	return remote;
 }
 
-ntmem_t *ntm_create_ex(size_t length)
+ntmem_t *NTHREAD_API ntm_create_ex(size_t length)
 {
 	ntmem_t *ntmem = N_ALLOC(NTM_CALC_STRUCT_SIZE(length));
 	if (ntmem == NULL)
@@ -111,12 +111,12 @@ ntmem_t *ntm_create_ex(size_t length)
 	return ntmem;
 }
 
-ntmem_t *ntm_create()
+ntmem_t *NTHREAD_API ntm_create()
 {
 	return ntm_create_ex(NTMEM_DEFAULT_LENGTH);
 }
 
-ntmem_t *ntm_create_with_alloc_ex(size_t length)
+ntmem_t *NTHREAD_API ntm_create_with_alloc_ex(size_t length)
 {
 	ntmem_t *ntmem = ntm_create_ex(length);
 	if (ntmem == NULL)
@@ -129,12 +129,12 @@ ntmem_t *ntm_create_with_alloc_ex(size_t length)
 	return ntmem;
 }
 
-ntmem_t *ntm_create_with_alloc()
+ntmem_t *NTHREAD_API ntm_create_with_alloc()
 {
 	return ntm_create_with_alloc_ex(NTMEM_DEFAULT_LENGTH);
 }
 
-ntmem_t *ntm_create_from_remote(void *remote, size_t length)
+ntmem_t *NTHREAD_API ntm_create_from_remote(void *remote, size_t length)
 {
 	ntmem_t *ntmem = ntm_create_ex(length);
 	if (ntmem == NULL)
@@ -149,25 +149,25 @@ ntmem_t *ntm_create_from_remote(void *remote, size_t length)
 	return ntmem;
 }
 
-void ntm_delete(ntmem_t *ntmem)
+void NTHREAD_API ntm_delete(ntmem_t *ntmem)
 {
 	N_FREE(ntmem);
 }
 
-void ntm_delete_and_free(ntmem_t *ntmem)
+void NTHREAD_API ntm_delete_and_free(ntmem_t *ntmem)
 {
 	ntm_free_remote(ntmem);
 	ntm_delete(ntmem);
 }
 
-void *ntm_delete_and_detach(ntmem_t *ntmem)
+void *NTHREAD_API ntm_delete_and_detach(ntmem_t *ntmem)
 {
 	void *remote = NTM_REMOTE(ntmem);
 	ntm_delete(ntmem);
 	return remote;
 }
 
-void *ntm_pull_with_tunnel(ntmem_t *ntmem, nttunnel_t *nttunnel)
+void *NTHREAD_API ntm_pull_with_tunnel(ntmem_t *ntmem, nttunnel_t *nttunnel)
 {
 #ifdef LOG_LEVEL_3
 	LOG_INFO("ntm_pull(ntmem=%p, nttunnel=%p)", ntmem, nttunnel);
@@ -211,7 +211,7 @@ static void *ntm_push_with_tunnel_ex(ntmem_t *ntmem, nttunnel_t *nttunnel,
 	return remote;
 }
 
-void *ntm_push_with_tunnel(ntmem_t *ntmem, nttunnel_t *nttunnel)
+void *NTHREAD_API ntm_push_with_tunnel(ntmem_t *ntmem, nttunnel_t *nttunnel)
 {
 	return ntm_push_with_tunnel_ex(ntmem, nttunnel, 0, NTM_LENGTH(ntmem));
 }
@@ -240,7 +240,7 @@ static void *ntm_push_with_memset_ex(ntmem_t *ntmem, size_t begin, size_t len)
 	return remote;
 }
 
-void *ntm_push_with_memset(ntmem_t *ntmem)
+void *NTHREAD_API ntm_push_with_memset(ntmem_t *ntmem)
 {
 	return ntm_push_with_memset_ex(ntmem, 0, NTM_LENGTH(ntmem));
 }
@@ -265,7 +265,7 @@ size_t _find_diff(void *mem1, void *mem2, size_t len)
 	return len;
 }
 
-void *ntm_push_ex(ntmem_t *ntmem, nttunnel_t *nttunnel)
+void *NTHREAD_API ntm_push_ex(ntmem_t *ntmem, nttunnel_t *nttunnel)
 {
 	void *remote = NTM_REMOTE(ntmem);
 	bool b = !ntt_can_write(nttunnel);
@@ -298,7 +298,7 @@ void *ntm_push_ex(ntmem_t *ntmem, nttunnel_t *nttunnel)
 	return remote;
 }
 
-void *ntm_push(ntmem_t *ntmem)
+void *NTHREAD_API ntm_push(ntmem_t *ntmem)
 {
 	nttunnel_t *nttunnel = ntu_nttunnel();
 	return ntm_push_ex(ntmem, nttunnel);

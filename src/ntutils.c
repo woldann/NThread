@@ -54,14 +54,14 @@ struct ntutils_tfunctions {
 DWORD ntu_tls_index;
 #endif /* ifdef __WIN32 */
 
-ntutils_t *_ntu_get(void)
+ntutils_t *NTHREAD_API _ntu_get(void)
 {
 #ifdef __WIN32
 	return (ntutils_t *)TlsGetValue(ntu_tls_index);
 #endif /* ifdef __WIN32 */
 }
 
-nerror_t ntu_set(ntutils_t *ntutils)
+nerror_t NTHREAD_API ntu_set(ntutils_t *ntutils)
 {
 	ntutils_t *o_ntutils = ntu_get();
 	if (o_ntutils != NULL && o_ntutils != ntutils)
@@ -77,7 +77,7 @@ nerror_t ntu_set(ntutils_t *ntutils)
 	return N_OK;
 }
 
-ntutils_t *ntu_resize(size_t new_size)
+ntutils_t *NTHREAD_API ntu_resize(size_t new_size)
 {
 	ntutils_t *ntutils;
 	ntutils_t *o_ntutils = ntu_get();
@@ -94,19 +94,19 @@ ntutils_t *ntu_resize(size_t new_size)
 
 #ifndef NTU_GLOBAL_CC
 
-void _ntu_set_cc(ntucc_t cc)
+void NTHREAD_API _ntu_set_cc(ntucc_t cc)
 {
 	ntutils_t *ntutils = ntu_get();
 	if (ntutils != NULL)
 		ntu_set_cc_ex(ntutils, cc);
 }
 
-void _ntu_set_default_cc()
+void NTHREAD_API _ntu_set_default_cc()
 {
 	_ntu_set_cc(NTU_DEFAULT_CC);
 }
 
-ntutils_t *_ntu_o(ntucc_t cc)
+ntutils_t *NTHREAD_API _ntu_o(ntucc_t cc)
 {
 	ntutils_t *ntutils = ntu_get();
 	if (ntutils != NULL)
@@ -117,7 +117,7 @@ ntutils_t *_ntu_o(ntucc_t cc)
 
 #endif // !NTU_GLOBAL_CC
 
-void *ntu_get_libc_base()
+void *NTHREAD_API ntu_get_libc_base()
 {
 	void *ret;
 
@@ -138,7 +138,7 @@ void *ntu_get_libc_base()
 	return ret;
 }
 
-nerror_t ntu_global_init(void)
+nerror_t NTHREAD_API ntu_global_init(void)
 {
 #ifdef __WIN32
 
@@ -202,7 +202,7 @@ nerror_t ntu_global_init(void)
 	return N_OK;
 }
 
-void ntu_global_destroy(void)
+void NTHREAD_API ntu_global_destroy(void)
 {
 	if (ntu_tls_index != 0) {
 #ifdef __WIN32
@@ -213,7 +213,7 @@ void ntu_global_destroy(void)
 	}
 }
 
-nerror_t ntu_upgrade(nthread_t *nthread)
+nerror_t NTHREAD_API ntu_upgrade(nthread_t *nthread)
 {
 	if (!NTHREAD_IS_VALID(nthread))
 		return GET_ERR(NTUTILS_NTHREAD_ERROR);
@@ -243,8 +243,9 @@ ntu_upgrade_error_ret:
 	return ret;
 }
 
-nerror_t ntu_attach_ex(ntid_t thread_id, nthread_reg_offset_t push_reg_offset,
-		       void *push_addr, void *sleep_addr)
+nerror_t NTHREAD_API ntu_attach_ex(ntid_t thread_id,
+				   nthread_reg_offset_t push_reg_offset,
+				   void *push_addr, void *sleep_addr)
 {
 	nthread_t nthread;
 	if (HAS_ERR(nthread_init(&nthread, thread_id, push_reg_offset,
@@ -255,13 +256,14 @@ nerror_t ntu_attach_ex(ntid_t thread_id, nthread_reg_offset_t push_reg_offset,
 	return ntu_upgrade(&nthread);
 }
 
-nerror_t ntu_attach(ntid_t thread_id, void *push_addr, void *sleep_addr)
+nerror_t NTHREAD_API ntu_attach(ntid_t thread_id, void *push_addr,
+				void *sleep_addr)
 {
 	return ntu_attach_ex(thread_id, NTHREAD_BEST_PUSH_REG, push_addr,
 			     sleep_addr);
 }
 
-void ntu_destroy()
+void NTHREAD_API ntu_destroy()
 {
 	ntutils_t *ntutils = ntu_get();
 	if (ntutils == NULL)
@@ -279,8 +281,9 @@ void ntu_destroy()
 	ntu_set(NULL);
 }
 
-nerror_t ntu_write_with_memset_value(void *dest, const void *source,
-				     size_t length, int8_t last_value)
+nerror_t NTHREAD_API ntu_write_with_memset_value(void *dest, const void *source,
+						 size_t length,
+						 int8_t last_value)
 {
 	size_t i = 0, j;
 	while (i < length) {
@@ -306,8 +309,9 @@ nerror_t ntu_write_with_memset_value(void *dest, const void *source,
 	return N_OK;
 }
 
-nerror_t ntu_write_with_memset_dest(void *dest, const void *source,
-				    size_t length, const void *last_dest)
+nerror_t NTHREAD_API ntu_write_with_memset_dest(void *dest, const void *source,
+						size_t length,
+						const void *last_dest)
 {
 	size_t i = 0, j;
 	while (i < length) {
@@ -336,7 +340,8 @@ nerror_t ntu_write_with_memset_dest(void *dest, const void *source,
 	return N_OK;
 }
 
-nerror_t ntu_write_with_memset(void *dest, const void *source, size_t length)
+nerror_t NTHREAD_API ntu_write_with_memset(void *dest, const void *source,
+					   size_t length)
 {
 	size_t i = 0, j;
 	while (i < length) {
@@ -356,7 +361,8 @@ nerror_t ntu_write_with_memset(void *dest, const void *source, size_t length)
 	return N_OK;
 }
 
-void ntu_set_reg_args(ntutils_t *ntutils, uint8_t arg_count, void **args)
+void NTHREAD_API ntu_set_reg_args(ntutils_t *ntutils, uint8_t arg_count,
+				  void **args)
 {
 	nthread_t *nthread = &ntutils->nthread;
 
@@ -378,7 +384,8 @@ void ntu_set_reg_args(ntutils_t *ntutils, uint8_t arg_count, void **args)
 	}
 }
 
-nerror_t ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count, va_list args)
+nerror_t NTHREAD_API ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count,
+				    va_list args)
 {
 	nthread_t *nthread = &ntutils->nthread;
 
@@ -456,7 +463,7 @@ nerror_t ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count, va_list args)
 	return N_OK;
 }
 
-nerror_t ntu_set_args(ntutils_t *ntutils, uint8_t arg_count, ...)
+nerror_t NTHREAD_API ntu_set_args(ntutils_t *ntutils, uint8_t arg_count, ...)
 {
 	va_list args;
 	va_start(args, arg_count);
@@ -467,14 +474,15 @@ nerror_t ntu_set_args(ntutils_t *ntutils, uint8_t arg_count, ...)
 	return ret;
 }
 
-nerror_t ntu_call_v(ntutils_t *ntutils, void *func_addr, uint8_t arg_count,
-		    va_list args)
+nerror_t NTHREAD_API ntu_call_v(ntutils_t *ntutils, void *func_addr,
+				uint8_t arg_count, va_list args)
 {
 	RET_ERR(ntu_set_args_v(ntutils, arg_count, args));
 	return nthread_call(&ntutils->nthread, func_addr, &ntutils->ret_value);
 }
 
-nerror_t ntu_call(ntutils_t *ntutils, void *func_addr, uint8_t arg_count, ...)
+nerror_t NTHREAD_API ntu_call(ntutils_t *ntutils, void *func_addr,
+			      uint8_t arg_count, ...)
 {
 	va_list args;
 	va_start(args, arg_count);
@@ -485,7 +493,7 @@ nerror_t ntu_call(ntutils_t *ntutils, void *func_addr, uint8_t arg_count, ...)
 	return ret;
 }
 
-void *ntu_ucall_v(void *func_addr, uint8_t arg_count, va_list args)
+void *NTHREAD_API ntu_ucall_v(void *func_addr, uint8_t arg_count, va_list args)
 {
 	ntutils_t *ntutils = ntu_get();
 	if (HAS_ERR(ntu_call_v(ntutils, func_addr, arg_count, args)))
@@ -494,7 +502,7 @@ void *ntu_ucall_v(void *func_addr, uint8_t arg_count, va_list args)
 	return ntutils->ret_value;
 }
 
-void *_ntu_ucall(void *func_addr, uint8_t arg_count, ...)
+void *NTHREAD_API _ntu_ucall(void *func_addr, uint8_t arg_count, ...)
 {
 	va_list args;
 	va_start(args, arg_count);
@@ -505,44 +513,47 @@ void *_ntu_ucall(void *func_addr, uint8_t arg_count, ...)
 	return ret;
 }
 
-void *ntu_memset(void *dest, int fill, size_t length)
+void *NTHREAD_API ntu_memset(void *dest, int fill, size_t length)
 {
 	ntu_set_default_cc();
 	return ntu_ucall(ntu_funcs.memset, dest, fill, length);
 }
 
-void *ntu_malloc(size_t size)
+void *NTHREAD_API ntu_malloc(size_t size)
 {
 	ntu_set_default_cc();
 	return ntu_ucall(ntu_funcs.malloc, size);
 }
 
-void ntu_free(void *address)
+void NTHREAD_API ntu_free(void *address)
 {
 	ntu_set_default_cc();
 	ntu_ucall(ntu_funcs.free, address);
 }
 
-FILE *ntu_fopen(const nfile_path_t filename, const nfile_path_t mode)
+FILE *NTHREAD_API ntu_fopen(const nfile_path_t filename,
+			    const nfile_path_t mode)
 {
 	ntu_set_default_cc();
 	return (FILE *)ntu_ucall(ntu_funcs.fopen, filename, mode);
 }
 
-size_t ntu_fread(void *buffer, size_t size, size_t count, FILE *fstream)
+size_t NTHREAD_API ntu_fread(void *buffer, size_t size, size_t count,
+			     FILE *fstream)
 {
 	ntu_set_default_cc();
 	return (size_t)ntu_ucall(ntu_funcs.fread, buffer, size, count, fstream);
 }
 
-size_t ntu_fwrite(const void *buffer, size_t size, size_t count, FILE *fstream)
+size_t NTHREAD_API ntu_fwrite(const void *buffer, size_t size, size_t count,
+			      FILE *fstream)
 {
 	ntu_set_default_cc();
 	return (size_t)ntu_ucall(ntu_funcs.fwrite, buffer, size, count,
 				 fstream);
 }
 
-int ntu_fflush(FILE *fstream)
+int NTHREAD_API ntu_fflush(FILE *fstream)
 {
 	ntutils_t *ntutils = ntu_o(NTU_DEFAULT_CC);
 	if (HAS_ERR(ntu_call(ntutils, ntu_funcs.fflush, 1, fstream)))
@@ -551,7 +562,7 @@ int ntu_fflush(FILE *fstream)
 	return (size_t)ntutils->ret_value;
 }
 
-int ntu_fclose(FILE *fstream)
+int NTHREAD_API ntu_fclose(FILE *fstream)
 {
 	ntutils_t *ntutils = ntu_o(NTU_DEFAULT_CC);
 	if (HAS_ERR(ntu_call(ntutils, ntu_funcs.fclose, 1, fstream)))
@@ -560,7 +571,7 @@ int ntu_fclose(FILE *fstream)
 	return (size_t)ntutils->ret_value;
 }
 
-void *ntu_alloc_str(const char *str)
+void *NTHREAD_API ntu_alloc_str(const char *str)
 {
 	size_t str_len = (strlen(str) + 1) * sizeof(*str);
 	void *addr = ntu_malloc(str_len);
@@ -575,31 +586,33 @@ void *ntu_alloc_str(const char *str)
 	return addr;
 }
 
-nttunnel_t *ntu_nttunnel()
+nttunnel_t *NTHREAD_API ntu_nttunnel()
 {
 	ntutils_t *ntutils = ntu_get();
 	return NTU_NTTUNNEL_EX(ntutils);
 }
 
-bool ntu_tunnel_can_read()
+bool NTHREAD_API ntu_tunnel_can_read()
 {
 	nttunnel_t *nttunnel = ntu_nttunnel();
 	return ntt_can_read(nttunnel);
 }
 
-bool ntu_tunnel_can_write()
+bool NTHREAD_API ntu_tunnel_can_write()
 {
 	nttunnel_t *nttunnel = ntu_nttunnel();
 	return ntt_can_write(nttunnel);
 }
 
-nerror_t ntu_tunnel_read(const void *dest, void *source, size_t length)
+nerror_t NTHREAD_API ntu_tunnel_read(const void *dest, void *source,
+				     size_t length)
 {
 	nttunnel_t *tunnel = ntu_nttunnel();
 	return ntt_read(tunnel, dest, source, length);
 }
 
-nerror_t ntu_tunnel_write(void *dest, const void *source, size_t length)
+nerror_t NTHREAD_API ntu_tunnel_write(void *dest, const void *source,
+				      size_t length)
 {
 	nttunnel_t *tunnel = ntu_nttunnel();
 	return ntt_write(tunnel, dest, source, length);
