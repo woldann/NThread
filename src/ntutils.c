@@ -215,7 +215,7 @@ void ntu_global_destroy(void)
 
 nerror_t ntu_upgrade(nthread_t *nthread)
 {
-	if (nthread->thread == NULL)
+	if (!NTHREAD_IS_VALID(nthread))
 		return GET_ERR(NTUTILS_NTHREAD_ERROR);
 
 	ntutils_t *ntutils = ntu_resize(sizeof(ntutils_t));

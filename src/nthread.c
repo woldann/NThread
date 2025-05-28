@@ -152,9 +152,9 @@ void nthread_destroy(nthread_t *nthread)
 		nthread_set_regs(nthread);
 	}
 
-	if (nthread->thread != NULL) {
+	if (NTHREAD_IS_VALID(nthread)) {
 		CloseHandle(nthread->thread);
-    nthread->thread = NULL;
+    NTHREAD_SET_INVALID(nthread);
   }
 
 #endif /* ifdef __WIN32 */
