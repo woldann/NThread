@@ -163,11 +163,21 @@ typedef struct {
 
 #ifdef __WIN32
 
+#define NTHREAD_IS_VALID(nthread) ((nthread)->thread != NULL)
+#define NTHREAD_SET_INVALID(nthread) ((nthread)->thread = NULL)
+
 ntid_t nthread_get_id(nthread_t *nthread);
 
 #define NTHREAD_GET_ID(nthread) nthread_get_id(nthread)
 
-#endif // __WIN32
+#else // !__WIN32
+
+#define NTHREAD_IS_VALID(nthread) ((nthread)->thread != 0)
+#define NTHREAD_SET_INVALID(nthread) ((nthread)->thread = 0)
+
+#define NTHREAD_GET_ID(nthread) ((nthread)->thread)
+
+#endif // !__WIN32
 
 #define NTHREAD_GET_REG(nthread, reg) \
 	(((void **)(((void *)&(nthread)->n_ctx) + reg))[0])

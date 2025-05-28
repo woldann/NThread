@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 	if (HAS_ERR(neptune_init()))
 		return EXIT_FAILURE;
 
-	LOG_INFO("neptune initilaized!");
+	LOG_INFO("Neptune initilaized!");
 
 	ntid_t tid;
 	printf("enter tid: ");
