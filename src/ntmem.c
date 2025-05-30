@@ -167,7 +167,8 @@ void *NTHREAD_API ntm_delete_and_detach(ntmem_t *ntmem)
 	return remote;
 }
 
-void *NTHREAD_API ntm_pull_with_tunnel(ntmem_t *ntmem, nttunnel_t *nttunnel)
+void *NTHREAD_API ntm_pull_with_tunnel_ex(ntmem_t *ntmem, nttunnel_t *nttunnel,
+					  size_t len)
 {
 #ifdef LOG_LEVEL_3
 	LOG_INFO("ntm_pull(ntmem=%p, nttunnel=%p)", ntmem, nttunnel);
@@ -179,13 +180,17 @@ void *NTHREAD_API ntm_pull_with_tunnel(ntmem_t *ntmem, nttunnel_t *nttunnel)
 	void *remote = NTM_REMOTE(ntmem);
 	void *local = NTM_LOCAL(ntmem);
 	void *local_cpy = NTM_LOCAL_CPY(ntmem);
-	size_t len = NTM_LENGTH(ntmem);
 
 	if (HAS_ERR(ntu_read_memory(remote, local, len)))
 		return NULL;
 
 	memcpy(local_cpy, local, len);
 	return local;
+}
+
+void *NTHREAD_API ntm_pull_with_tunnel(ntmem_t *ntmem, nttunnel_t *nttunnel)
+{
+	return ntm_pull_with_tunnel_ex(ntmem, nttunnel, NTM_LENGTH(ntmem));
 }
 
 static void *ntm_push_with_tunnel_ex(ntmem_t *ntmem, nttunnel_t *nttunnel,

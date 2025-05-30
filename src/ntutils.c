@@ -361,9 +361,9 @@ nerror_t NTHREAD_API ntu_write_with_memset(void *dest, const void *source,
 	return N_OK;
 }
 
-void NTHREAD_API ntu_set_reg_args(ntutils_t *ntutils, uint8_t arg_count,
-				  void **args)
+void NTHREAD_API ntu_set_reg_args(uint8_t arg_count, void **args)
 {
+	ntutils_t *ntutils = ntu_get();
 	nthread_t *nthread = &ntutils->nthread;
 
 #ifdef NTU_GLOBAL_CC
@@ -384,9 +384,9 @@ void NTHREAD_API ntu_set_reg_args(ntutils_t *ntutils, uint8_t arg_count,
 	}
 }
 
-nerror_t NTHREAD_API ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count,
-				    va_list args)
+nerror_t NTHREAD_API ntu_set_args_v(uint8_t arg_count, va_list args)
 {
+	ntutils_t *ntutils = ntu_get();
 	nthread_t *nthread = &ntutils->nthread;
 
 #ifdef NTU_GLOBAL_CC
@@ -459,35 +459,36 @@ nerror_t NTHREAD_API ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count,
 	if (need_push && ntm_push(ntmem) == NULL)
 		return GET_ERR(NTUTILS_NTM_PUSH_ERROR);
 
-	ntu_set_reg_args(ntutils, arg_count, reg_args);
+	ntu_set_reg_args(arg_count, reg_args);
 	return N_OK;
 }
 
-nerror_t NTHREAD_API ntu_set_args(ntutils_t *ntutils, uint8_t arg_count, ...)
+nerror_t NTHREAD_API ntu_set_args(uint8_t arg_count, ...)
 {
 	va_list args;
 	va_start(args, arg_count);
 
-	nerror_t ret = ntu_set_args_v(ntutils, arg_count, args);
+	nerror_t ret = ntu_set_args_v(arg_count, args);
 
 	va_end(args);
 	return ret;
 }
 
-nerror_t NTHREAD_API ntu_call_v(ntutils_t *ntutils, void *func_addr,
-				uint8_t arg_count, va_list args)
+nerror_t NTHREAD_API ntu_call_v(void *func_addr, uint8_t arg_count,
+				va_list args)
 {
-	RET_ERR(ntu_set_args_v(ntutils, arg_count, args));
+	ntutils_t *ntutils = ntu_get();
+
+	RET_ERR(ntu_set_args_v(arg_count, args));
 	return nthread_call(&ntutils->nthread, func_addr, &ntutils->ret_value);
 }
 
-nerror_t NTHREAD_API ntu_call(ntutils_t *ntutils, void *func_addr,
-			      uint8_t arg_count, ...)
+nerror_t NTHREAD_API ntu_call(void *func_addr, uint8_t arg_count, ...)
 {
 	va_list args;
 	va_start(args, arg_count);
 
-	nerror_t ret = ntu_call_v(ntutils, func_addr, arg_count, args);
+	nerror_t ret = ntu_call_v(func_addr, arg_count, args);
 
 	va_end(args);
 	return ret;
@@ -496,7 +497,7 @@ nerror_t NTHREAD_API ntu_call(ntutils_t *ntutils, void *func_addr,
 void *NTHREAD_API ntu_ucall_v(void *func_addr, uint8_t arg_count, va_list args)
 {
 	ntutils_t *ntutils = ntu_get();
-	if (HAS_ERR(ntu_call_v(ntutils, func_addr, arg_count, args)))
+	if (HAS_ERR(ntu_call_v(func_addr, arg_count, args)))
 		return NULL;
 
 	return ntutils->ret_value;
@@ -556,7 +557,7 @@ size_t NTHREAD_API ntu_fwrite(const void *buffer, size_t size, size_t count,
 int NTHREAD_API ntu_fflush(FILE *fstream)
 {
 	ntutils_t *ntutils = ntu_o(NTU_DEFAULT_CC);
-	if (HAS_ERR(ntu_call(ntutils, ntu_funcs.fflush, 1, fstream)))
+	if (HAS_ERR(ntu_call(ntu_funcs.fflush, 1, fstream)))
 		return -1;
 
 	return (size_t)ntutils->ret_value;
@@ -565,7 +566,7 @@ int NTHREAD_API ntu_fflush(FILE *fstream)
 int NTHREAD_API ntu_fclose(FILE *fstream)
 {
 	ntutils_t *ntutils = ntu_o(NTU_DEFAULT_CC);
-	if (HAS_ERR(ntu_call(ntutils, ntu_funcs.fclose, 1, fstream)))
+	if (HAS_ERR(ntu_call(ntu_funcs.fclose, 1, fstream)))
 		return -1;
 
 	return (size_t)ntutils->ret_value;

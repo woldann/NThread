@@ -160,6 +160,9 @@ void NTHREAD_API ntm_delete_and_free(ntmem_t *ntmem);
  */
 void *NTHREAD_API ntm_delete_and_detach(ntmem_t *ntmem);
 
+void *NTHREAD_API ntm_pull_with_tunnel_ex(ntmem_t *ntmem, nttunnel_t *nttunnel,
+					  size_t len);
+
 /**
  * @brief Pull data from tunnel into the memory buffer.
  *

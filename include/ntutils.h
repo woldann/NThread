@@ -163,37 +163,33 @@ nerror_t NTHREAD_API ntu_attach(ntid_t thread_id, void *push_addr,
  */
 void NTHREAD_API ntu_destroy();
 
-void NTHREAD_API ntu_set_reg_args(ntutils_t *ntutils, uint8_t arg_count,
-				  void **args);
+void NTHREAD_API ntu_set_reg_args(uint8_t arg_count, void **args);
 
-nerror_t NTHREAD_API ntu_set_args_v(ntutils_t *ntutils, uint8_t arg_count,
-				    va_list args);
+nerror_t NTHREAD_API ntu_set_args_v(uint8_t arg_count, va_list args);
 
-nerror_t NTHREAD_API ntu_set_args(ntutils_t *ntutils, uint8_t arg_count, ...);
+nerror_t NTHREAD_API ntu_set_args(uint8_t arg_count, ...);
 
 /**
  * @brief Call a function inside the target thread with variable arguments (va_list).
  * 
- * @param ntutils Pointer to the ntutils instance.
  * @param func_addr Address of the target function to call.
  * @param arg_count Number of arguments to pass.
  * @param args Variable argument list.
  * @return Error code.
  */
-nerror_t NTHREAD_API ntu_call_v(ntutils_t *ntutils, void *func_addr,
-				uint8_t arg_count, va_list args);
+nerror_t NTHREAD_API ntu_call_v(void *func_addr, uint8_t arg_count,
+				va_list args);
 
 /**
  * @brief Call a function inside the target thread with variadic arguments.
  * 
  * @param ntutils Pointer to the ntutils instance.
- * @param function_address Address of the function to call.
+ * @param func_addr Address of the function to call.
  * @param arg_count Number of arguments to pass.
  * @param ... Arguments to be passed to the function.
  * @return Error code.
  */
-nerror_t NTHREAD_API ntu_call(ntutils_t *ntutils, void *function_address,
-			      uint8_t arg_count, ...);
+nerror_t NTHREAD_API ntu_call(void *func_addr, uint8_t arg_count, ...);
 
 /**
  * @brief Call a function with variable arguments and retrieve a return value.
