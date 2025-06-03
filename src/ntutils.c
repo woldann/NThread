@@ -63,10 +63,6 @@ ntutils_t *NTHREAD_API _ntu_get(void)
 
 nerror_t NTHREAD_API ntu_set(ntutils_t *ntutils)
 {
-	ntutils_t *o_ntutils = ntu_get();
-	if (o_ntutils != NULL && o_ntutils != ntutils)
-		N_FREE(o_ntutils);
-
 #ifdef __WIN32
 
 	if (!TlsSetValue(ntu_tls_index, (void *)ntutils))
@@ -79,6 +75,11 @@ nerror_t NTHREAD_API ntu_set(ntutils_t *ntutils)
 
 ntutils_t *NTHREAD_API ntu_resize(size_t new_size)
 {
+	if (new_size == 0) {
+		ntu_set(NULL);
+		return NULL;
+	}
+
 	ntutils_t *ntutils;
 	ntutils_t *o_ntutils = ntu_get();
 	if (o_ntutils == NULL)
