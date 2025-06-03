@@ -110,6 +110,12 @@ typedef int16_t nthread_reg_offset_t;
 #define NTHREAD_R15_INDEX 0x0F
 #define NTHREAD_RIP_INDEX 0x10
 
+typedef uint8_t nthread_flags_t;
+
+#define NTHREAD_FLAG_DONT_SUSPEND 0x10
+#define NTHREAD_FLAG_DONT_RESUME 0x20
+#define NTHREAD_FLAG_DISABLE_GET_ID 0x40
+
 #define NTHREAD_REG_INDEX_TO_OFFSET(reg_index) \
 	((nthread_reg_offset_t)(NTHREAD_RAX + ((sizeof(DWORD64)) * reg_index)))
 
@@ -200,7 +206,7 @@ bool NTHREAD_API nthread_is_waiting(nthread_t *nthread);
 nerror_t NTHREAD_API nthread_init_ex(nthread_t *nthread, ntid_t ntid,
 				     nthread_reg_offset_t push_reg_offset,
 				     void *push_addr, void *sleep_addr,
-				     uint8_t timeout_sec);
+				     nthread_flags_t flags);
 
 nerror_t NTHREAD_API nthread_init(nthread_t *nthread, ntid_t ntid,
 				  nthread_reg_offset_t push_reg_offset,

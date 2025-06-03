@@ -63,7 +63,7 @@ static void nthread_copy_ncontext(nthread_t *nthread)
 nerror_t NTHREAD_API nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
 				     nthread_reg_offset_t push_reg_offset,
 				     void *push_addr, void *sleep_addr,
-				     uint8_t timeout_sec)
+				     nthread_flags_t flags)
 {
 #ifdef LOG_LEVEL_1
 	LOG_INFO(
@@ -76,7 +76,16 @@ nerror_t NTHREAD_API nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
 
 #ifdef __WIN32
 
-	HANDLE thread = OpenThread(NTHREAD_ACCESS, false, thread_id);
+	DWORD access = THREAD_GET_CONTEXT | THREAD_SET_CONTEXT;
+
+	if ((flags & NTHREAD_FLAG_DONT_SUSPEND) == 0 ||
+	    (flags & NTHREAD_FLAG_DONT_RESUME) == 0)
+		access |= THREAD_SUSPEND_RESUME;
+
+	if ((flags & NTHREAD_FLAG_DISABLE_GET_ID) == 0)
+		access |= THREAD_QUERY_INFORMATION;
+
+	HANDLE thread = OpenThread(access, false, thread_id);
 	if (thread == NULL)
 		return GET_ERR(NTHREAD_OPEN_THREAD_ERROR);
 
@@ -84,7 +93,7 @@ nerror_t NTHREAD_API nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
 
 	nthread->thread = thread;
 	nthread->sleep_addr = sleep_addr;
-	nthread->timeout = timeout_sec;
+	nthread->timeout = (flags & 0x0f);
 
 #ifdef __WIN32
 
@@ -93,7 +102,8 @@ nerror_t NTHREAD_API nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
 
 #endif /* ifdef __WIN32 */
 
-	RET_ERR(nthread_suspend(nthread));
+	if ((flags & NTHREAD_FLAG_DONT_SUSPEND) == 0)
+		RET_ERR(nthread_suspend(nthread));
 
 	nerror_t error_helper = nthread_get_regs(nthread);
 	if (HAS_ERR(error_helper))
@@ -118,15 +128,18 @@ nerror_t NTHREAD_API nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
 	error_helper = nthread_set_regs(nthread);
 	if (HAS_ERR(error_helper)) {
 nthread_init_resume_and_ret:
-		nthread_resume(nthread);
+		if ((flags & NTHREAD_FLAG_DONT_RESUME) == 0)
+			nthread_resume(nthread);
 nthread_init_destroy_and_ret:
 		nthread_destroy(nthread);
 		return error_helper;
 	}
 
-	error_helper = nthread_resume(nthread);
-	if (HAS_ERR(error_helper))
-		goto nthread_init_destroy_and_ret;
+	if ((flags & NTHREAD_FLAG_DONT_RESUME) == 0) {
+		error_helper = nthread_resume(nthread);
+		if (HAS_ERR(error_helper))
+			goto nthread_init_destroy_and_ret;
+	}
 
 	error_helper = nthread_wait(nthread);
 	if (HAS_ERR(error_helper)) {
