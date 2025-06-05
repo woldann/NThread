@@ -252,7 +252,8 @@ void *NTHREAD_API ntm_push_with_memset(ntmem_t *ntmem)
 
 size_t _find_diff_rev(void *mem1, void *mem2, size_t len)
 {
-	for (size_t i = len - 1; i >= 0; i--) {
+	size_t i;
+	for (i = len - 1; i >= 0; i--) {
 		if (((char *)mem1)[i] != ((char *)mem2)[i])
 			return i;
 	}
@@ -262,7 +263,8 @@ size_t _find_diff_rev(void *mem1, void *mem2, size_t len)
 
 size_t _find_diff(void *mem1, void *mem2, size_t len)
 {
-	for (size_t i = 0; i < len; i++) {
+	size_t i;
+	for (i = 0; i < len; i++) {
 		if (((char *)mem1)[i] != ((char *)mem2)[i])
 			return i;
 	}

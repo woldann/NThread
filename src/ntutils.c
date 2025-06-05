@@ -373,7 +373,8 @@ void NTHREAD_API ntu_set_reg_args(uint8_t arg_count, void **args)
 	ntucc_t sel_cc = ntutils->sel_cc;
 #endif /* ifndef NTU_GLOBAL_CC */
 
-	for (int8_t i = 0; i < 8 && i < arg_count; i++) {
+	int8_t i;
+	for (i = 0; i < 8 && i < arg_count; i++) {
 		int8_t reg_index = NTUCC_GET_ARG(sel_cc, i);
 		if (reg_index == 0)
 			continue;
@@ -402,7 +403,9 @@ nerror_t NTHREAD_API ntu_set_args_v(uint8_t arg_count, va_list args)
 #endif /* ifdef LOG_LEVEL_3 */
 
 	int8_t reg_arg_count = 0;
-	for (int8_t i = 0; i < 8; i++) {
+
+	uint8_t i;
+	for (i = 0; i < 8; i++) {
 		int8_t reg_index = NTUCC_GET_ARG(sel_cc, i);
 		if (reg_index != 0)
 			reg_arg_count++;
@@ -440,7 +443,7 @@ nerror_t NTHREAD_API ntu_set_args_v(uint8_t arg_count, va_list args)
 	else
 		push_arg_pos = 0;
 
-	for (uint8_t i = 0; i < arg_count; i++) {
+	for (i = 0; i < arg_count; i++) {
 		void *arg = va_arg(args, void *);
 		if (i < 8) {
 			int8_t reg_index = NTUCC_GET_ARG(sel_cc, i);
