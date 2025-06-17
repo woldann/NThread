@@ -26,7 +26,7 @@
 #include "ntmem.h"
 #include "nmem.h"
 
-#include <math.h>
+#include "ntutils.h"
 
 void _ntt_delete_path(nttunnel_fschan_t *fschan)
 {

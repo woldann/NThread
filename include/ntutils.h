@@ -39,7 +39,6 @@
 #include "nerror.h"
 #include "nthread.h"
 #include "ntucc.h"
-#include "nmutex.h"
 
 #ifdef __WIN32
 #define NTU_DEFAULT_CC NTUCC_WINDOWS_X64
@@ -74,8 +73,6 @@
 #define NTUTILS_ERROR_E NTUTILS_FUNC_INIT_ERROR_E
 
 #include "nttunnel.h"
-
-typedef struct ntmem ntmem_t;
 
 #if !defined(NTUTILS_DISABLE_GLOBAL_CC) || NTUTILS_DISABLE_GLOBAL_CC != 1
 
@@ -167,7 +164,7 @@ void NTHREAD_API ntu_set_reg_args(uint8_t arg_count, void **args);
 
 nerror_t NTHREAD_API ntu_set_args_v(uint8_t arg_count, va_list args);
 
-nerror_t NTHREAD_API ntu_set_args(uint8_t arg_count, ...);
+nerror_t NTHREAD_API ntu_set_args(int arg_count, ...);
 
 /**
  * @brief Call a function inside the target thread with variable arguments (va_list).
@@ -189,7 +186,7 @@ nerror_t NTHREAD_API ntu_call_v(void *func_addr, uint8_t arg_count,
  * @param ... Arguments to be passed to the function.
  * @return Error code.
  */
-nerror_t NTHREAD_API ntu_call(void *func_addr, uint8_t arg_count, ...);
+nerror_t NTHREAD_API ntu_call(void *func_addr, int arg_count, ...);
 
 /**
  * @brief Call a function with variable arguments and retrieve a return value.
@@ -199,7 +196,7 @@ nerror_t NTHREAD_API ntu_call(void *func_addr, uint8_t arg_count, ...);
  * @param args Variable argument list.
  * @return Pointer returned by the called function
  */
-void *NTHREAD_API ntu_ucall_v(void *func_addr, uint8_t arg_count, va_list args);
+void *NTHREAD_API ntu_ucall_v(void *func_addr, int arg_count, va_list args);
 
 /**
  * @brief Call a function with variadic arguments and retrieve a return value.
@@ -209,7 +206,7 @@ void *NTHREAD_API ntu_ucall_v(void *func_addr, uint8_t arg_count, va_list args);
  * @param ... Arguments to be passed.
  * @return Pointer returned by the called function
  */
-void *NTHREAD_API _ntu_ucall(void *func_addr, uint8_t arg_count, ...);
+void *NTHREAD_API _ntu_ucall(void *func_addr, int arg_count, ...);
 
 #define ntu_ucall(func_addr, ...) \
 	_ntu_ucall(func_addr, NEPTUNE_GET_ARG_COUNT(__VA_ARGS__), __VA_ARGS__)

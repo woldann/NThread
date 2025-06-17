@@ -467,7 +467,7 @@ nerror_t NTHREAD_API ntu_set_args_v(uint8_t arg_count, va_list args)
 	return N_OK;
 }
 
-nerror_t NTHREAD_API ntu_set_args(uint8_t arg_count, ...)
+nerror_t NTHREAD_API ntu_set_args(int arg_count, ...)
 {
 	va_list args;
 	va_start(args, arg_count);
@@ -487,7 +487,7 @@ nerror_t NTHREAD_API ntu_call_v(void *func_addr, uint8_t arg_count,
 	return nthread_call(&ntutils->nthread, func_addr, &ntutils->ret_value);
 }
 
-nerror_t NTHREAD_API ntu_call(void *func_addr, uint8_t arg_count, ...)
+nerror_t NTHREAD_API ntu_call(void *func_addr, int arg_count, ...)
 {
 	va_list args;
 	va_start(args, arg_count);
@@ -498,7 +498,7 @@ nerror_t NTHREAD_API ntu_call(void *func_addr, uint8_t arg_count, ...)
 	return ret;
 }
 
-void *NTHREAD_API ntu_ucall_v(void *func_addr, uint8_t arg_count, va_list args)
+void *NTHREAD_API ntu_ucall_v(void *func_addr, int arg_count, va_list args)
 {
 	ntutils_t *ntutils = ntu_get();
 	if (HAS_ERR(ntu_call_v(func_addr, arg_count, args)))
@@ -507,7 +507,7 @@ void *NTHREAD_API ntu_ucall_v(void *func_addr, uint8_t arg_count, va_list args)
 	return ntutils->ret_value;
 }
 
-void *NTHREAD_API _ntu_ucall(void *func_addr, uint8_t arg_count, ...)
+void *NTHREAD_API _ntu_ucall(void *func_addr, int arg_count, ...)
 {
 	va_list args;
 	va_start(args, arg_count);

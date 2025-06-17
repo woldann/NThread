@@ -108,8 +108,6 @@ typedef struct nttunnel nttunnel_t;
 
 #define NTTUNNEL_ERROR_E NTTUNNEL_NTM_CREATE_ERROR
 
-#include "ntutils.h"
-
 /**
  * @brief Check if the tunnel is ready for reading.
  *
