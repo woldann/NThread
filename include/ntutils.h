@@ -160,11 +160,48 @@ nerror_t NTHREAD_API ntu_attach(ntid_t thread_id, void *push_addr,
  */
 void NTHREAD_API ntu_destroy();
 
+/**
+ * @brief Set register arguments directly using an array of values
+ * 
+ * @param arg_count Number of arguments to set
+ * @param args Array of argument values to put in registers
+ */
 void NTHREAD_API ntu_set_reg_args(uint8_t arg_count, void **args);
 
+/**
+ * @brief Set arguments using a va_list
+ * 
+ * @param arg_count Number of arguments in the va_list
+ * @param args Variable argument list containing the arguments
+ * @return nerror_t error code
+ */
 nerror_t NTHREAD_API ntu_set_args_v(uint8_t arg_count, va_list args);
 
+/**
+ * @brief Set arguments using variadic parameters
+ * 
+ * @param arg_count Number of arguments to set
+ * @param ... Variable arguments to set
+ * @return nerror_t error code
+ */
 nerror_t NTHREAD_API ntu_set_args(int arg_count, ...);
+
+/**
+ * @brief Get current register argument values
+ * 
+ * @param arg_count Number of arguments to retrieve
+ * @param args Array to store retrieved argument values
+ */
+void NTHREAD_API ntu_get_reg_args(uint8_t arg_count, void **args);
+
+/**
+ * @brief Get current argument values
+ * 
+ * @param arg_count Number of arguments to retrieve
+ * @param args Array to store retrieved argument values
+ * @return nerror_t error code
+ */
+nerror_t NTHREAD_API ntu_get_args(uint8_t arg_count, void **args);
 
 /**
  * @brief Call a function inside the target thread with variable arguments (va_list).

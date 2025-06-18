@@ -478,6 +478,89 @@ nerror_t NTHREAD_API ntu_set_args(int arg_count, ...)
 	return ret;
 }
 
+void NTHREAD_API ntu_get_reg_args(uint8_t arg_count, void **args)
+{
+	ntutils_t *ntutils = ntu_get();
+	nthread_t *nthread = &ntutils->nthread;
+
+#ifdef NTU_GLOBAL_CC
+	ntucc_t sel_cc = NTU_GLOBAL_CC;
+#else /* ifdnef NTU_GLOBAL_CC */
+	ntucc_t sel_cc = ntutils->sel_cc;
+#endif /* ifndef NTU_GLOBAL_CC */
+
+	int8_t i;
+	for (i = 0; i < 8 && i < arg_count; i++) {
+		int8_t reg_index = NTUCC_GET_ARG(sel_cc, i);
+		if (reg_index == 0)
+			continue;
+
+		nthread_reg_offset_t off =
+			NTHREAD_REG_INDEX_TO_OFFSET(reg_index);
+
+		args[i] = NTHREAD_GET_OREG(nthread, off);
+	}
+}
+
+nerror_t NTHREAD_API ntu_get_args(uint8_t arg_count, void **args)
+{
+	ntutils_t *ntutils = ntu_get();
+	nthread_t *nthread = &ntutils->nthread;
+
+	RET_ERR(nthread_get_regs(nthread));
+
+#ifdef NTU_GLOBAL_CC
+	ntucc_t sel_cc = NTU_GLOBAL_CC;
+#else /* ifdnef NTU_GLOBAL_CC */
+	ntucc_t sel_cc = ntutils->sel_cc;
+#endif /* ifndef NTU_GLOBAL_CC */
+
+#ifdef LOG_LEVEL_3
+	LOG_INFO("ntu_get_args(cc=%p, nthread_id=%ld, arg_count=%d, args=%p)",
+		 sel_cc, NTHREAD_GET_ID(nthread), arg_count, args);
+#endif /* ifdef LOG_LEVEL_3 */
+
+	int8_t reg_arg_count = 0;
+
+	int8_t i;
+	for (i = 0; i < 8; i++) {
+		int8_t reg_index = NTUCC_GET_ARG(sel_cc, i);
+		if (reg_index != 0)
+			reg_arg_count++;
+	}
+
+	if (reg_arg_count > arg_count)
+		reg_arg_count = arg_count;
+
+	ntu_get_reg_args(reg_arg_count, args);
+
+	uint8_t push_arg_count = arg_count - reg_arg_count;
+	if (push_arg_count > 0) {
+		void *rsp = NTHREAD_GET_OREG(nthread, NTHREAD_RSP);
+		void *wpos = rsp + NTUCC_GET_STACK_ADD(sel_cc);
+
+		ntmem_t *ntmem = ntutils->stack_helper;
+		NTM_SET_REMOTE(ntmem, wpos);
+
+		nttunnel_t *nttunnel = ntu_nttunnel();
+		void **push_args = (void *)ntm_pull_with_tunnel_ex(
+			ntmem, nttunnel, sizeof(void *) * push_arg_count);
+
+		uint8_t i;
+
+		bool reverse = (sel_cc & NTUCC_REVERSE_OP) != 0;
+		if (reverse) {
+			for (i = 0; i < push_arg_count; i++)
+				args[reg_arg_count + i] =
+					push_args[push_arg_count - i - 1];
+		} else
+			memcpy(args + reg_arg_count, push_args,
+			       push_arg_count * sizeof(void *));
+	}
+
+	return N_OK;
+}
+
 nerror_t NTHREAD_API ntu_call_v(void *func_addr, uint8_t arg_count,
 				va_list args)
 {
