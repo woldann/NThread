@@ -39,7 +39,7 @@
 #ifndef __NTTUNNEL_H__
 #define __NTTUNNEL_H__
 
-#include "neptune.h"
+#include "nthread.h"
 #include "nfile.h"
 
 #define NTTUNNEL_FSCHAN_MAX_TRANSFER_256 0x00
