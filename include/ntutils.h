@@ -66,8 +66,11 @@
 #define NTUTILS_NTHREAD_ERROR 0x734C
 #define NTUTILS_NTU_RESIZE_ERROR 0x734D
 #define NTUTILS_NTHREAD_INIT_ERROR 0x734E
+#define NTUTILS_NTT_INIT_ERROR 0x734F
+#define NTUTILS_READ_MEMORY_ERROR 0x7350
+#define NTUTILS_WRITE_MEMORY_ERROR 0x7351
 
-#define NTUTILS_FUNC_INIT_ERROR 0x7350
+#define NTUTILS_FUNC_INIT_ERROR 0x7360
 #define NTUTILS_FUNC_INIT_ERROR_E (NTUTILS_FUNC_INIT_ERROR + 7)
 
 #define NTUTILS_ERROR_E NTUTILS_FUNC_INIT_ERROR_E
@@ -87,8 +90,6 @@ struct ntutils {
 	ntucc_t sel_cc;
 
 	nttunnel_t nttunnel;
-	ntmem_t *stack_helper;
-
 	nthread_t nthread;
 };
 
@@ -160,6 +161,9 @@ nerror_t NTHREAD_API ntu_attach(ntid_t thread_id, void *push_addr,
  */
 void NTHREAD_API ntu_destroy();
 
+void NTHREAD_API ntu_set_reg_args_ex(uint8_t arg_count, void **args,
+				     ntucc_t sel_cc);
+
 /**
  * @brief Set register arguments directly using an array of values
  * 
@@ -185,6 +189,9 @@ nerror_t NTHREAD_API ntu_set_args_v(uint8_t arg_count, va_list args);
  * @return nerror_t error code
  */
 nerror_t NTHREAD_API ntu_set_args(int arg_count, ...);
+
+void NTHREAD_API ntu_get_reg_args_ex(uint8_t arg_count, void **args,
+				     ntucc_t sel_cc);
 
 /**
  * @brief Get current register argument values

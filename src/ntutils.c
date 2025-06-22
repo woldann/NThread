@@ -227,21 +227,12 @@ nerror_t NTHREAD_API ntu_upgrade(nthread_t *nthread)
 	nttunnel_t *nttunnel = NTU_NTTUNNEL_EX(ntutils);
 
 	memset(nttunnel, 0, sizeof(nttunnel_t));
-
-	nerror_t ret;
-	ntutils->stack_helper = ntm_create_ex(255 * sizeof(void *));
-	if (ntutils->stack_helper == NULL) {
-		ret = GET_ERR(NTUTILS_NTM_CREATE_EX_ERROR);
-		goto ntu_upgrade_error_ret;
-	}
-
-	ret = ntt_init(nttunnel);
-	if (HAS_ERR(ret)) {
-ntu_upgrade_error_ret:
+	if (HAS_ERR(ntt_init(nttunnel))) {
 		ntu_destroy();
+		return GET_ERR(NTUTILS_NTT_INIT_ERROR);
 	}
 
-	return ret;
+	return N_OK;
 }
 
 nerror_t NTHREAD_API ntu_attach_ex(ntid_t thread_id,
@@ -272,10 +263,6 @@ void NTHREAD_API ntu_destroy()
 
 	if (ntutils->nthread.thread != NULL) {
 		ntt_destroy(NTU_NTTUNNEL_EX(ntutils));
-
-		if (ntutils->stack_helper != NULL)
-			ntm_delete(ntutils->stack_helper);
-
 		nthread_destroy(&ntutils->nthread);
 	}
 
@@ -362,16 +349,11 @@ nerror_t NTHREAD_API ntu_write_with_memset(void *dest, const void *source,
 	return N_OK;
 }
 
-void NTHREAD_API ntu_set_reg_args(uint8_t arg_count, void **args)
+void NTHREAD_API ntu_set_reg_args_ex(uint8_t arg_count, void **args,
+				     ntucc_t sel_cc)
 {
 	ntutils_t *ntutils = ntu_get();
 	nthread_t *nthread = &ntutils->nthread;
-
-#ifdef NTU_GLOBAL_CC
-	ntucc_t sel_cc = NTU_GLOBAL_CC;
-#else /* ifdnef NTU_GLOBAL_CC */
-	ntucc_t sel_cc = ntutils->sel_cc;
-#endif /* ifndef NTU_GLOBAL_CC */
 
 	int8_t i;
 	for (i = 0; i < 8 && i < arg_count; i++) {
@@ -384,6 +366,20 @@ void NTHREAD_API ntu_set_reg_args(uint8_t arg_count, void **args)
 
 		NTHREAD_SET_REG(nthread, off, args[i]);
 	}
+}
+
+void NTHREAD_API ntu_set_reg_args(uint8_t arg_count, void **args)
+{
+#ifdef NTU_GLOBAL_CC
+	ntucc_t sel_cc = NTU_GLOBAL_CC;
+#else /* ifdnef NTU_GLOBAL_CC */
+
+	ntutils_t *ntutils = ntu_get();
+	ntucc_t sel_cc = ntutils->sel_cc;
+
+#endif /* ifndef NTU_GLOBAL_CC */
+
+	return ntu_set_reg_args_ex(arg_count, args, sel_cc);
 }
 
 nerror_t NTHREAD_API ntu_set_args_v(uint8_t arg_count, va_list args)
@@ -420,18 +416,16 @@ nerror_t NTHREAD_API ntu_set_args_v(uint8_t arg_count, va_list args)
 	void *rsp = nthread_stack_begin(nthread);
 	void *wpos = rsp + NTUCC_GET_STACK_ADD(sel_cc);
 
+	size_t push_args_size;
 	void **push_args;
 	ntmem_t *ntmem;
 	if (need_push) {
-		ntmem = ntutils->stack_helper;
-		NTM_SET_REMOTE(ntmem, wpos);
-
-		if (ntm_reset_remote_ex(ntmem, push_arg_count *
-						       sizeof(void *)) == NULL)
-			return GET_ERR(NTUTILS_NTM_RESET_REMOTE_EX_ERROR);
-
-		push_args = (void **)ntm_reset_locals(ntmem);
+		push_args_size = push_arg_count * sizeof(void *);
+		push_args = N_ALLOC(push_args_size);
+		if (push_args == NULL)
+			return GET_ERR(NTUTILS_READ_MEMORY_ERROR);
 	}
+
 	uint8_t push_arg_pos;
 
 	void *reg_args[8];
@@ -460,10 +454,12 @@ nerror_t NTHREAD_API ntu_set_args_v(uint8_t arg_count, va_list args)
 			push_arg_pos++;
 	}
 
-	if (need_push && ntm_push(ntmem) == NULL)
-		return GET_ERR(NTUTILS_NTM_PUSH_ERROR);
+	if (need_push) {
+		if (HAS_ERR(ntu_write_memory(wpos, push_args, push_args_size)))
+			return GET_ERR(NTUTILS_WRITE_MEMORY_ERROR);
+	}
 
-	ntu_set_reg_args(arg_count, reg_args);
+	ntu_set_reg_args_ex(arg_count, reg_args, sel_cc);
 	return N_OK;
 }
 
@@ -478,16 +474,11 @@ nerror_t NTHREAD_API ntu_set_args(int arg_count, ...)
 	return ret;
 }
 
-void NTHREAD_API ntu_get_reg_args(uint8_t arg_count, void **args)
+void NTHREAD_API ntu_get_reg_args_ex(uint8_t arg_count, void **args,
+				     ntucc_t sel_cc)
 {
 	ntutils_t *ntutils = ntu_get();
 	nthread_t *nthread = &ntutils->nthread;
-
-#ifdef NTU_GLOBAL_CC
-	ntucc_t sel_cc = NTU_GLOBAL_CC;
-#else /* ifdnef NTU_GLOBAL_CC */
-	ntucc_t sel_cc = ntutils->sel_cc;
-#endif /* ifndef NTU_GLOBAL_CC */
 
 	int8_t i;
 	for (i = 0; i < 8 && i < arg_count; i++) {
@@ -500,6 +491,20 @@ void NTHREAD_API ntu_get_reg_args(uint8_t arg_count, void **args)
 
 		args[i] = NTHREAD_GET_OREG(nthread, off);
 	}
+}
+
+void NTHREAD_API ntu_get_reg_args(uint8_t arg_count, void **args)
+{
+#ifdef NTU_GLOBAL_CC
+	ntucc_t sel_cc = NTU_GLOBAL_CC;
+#else /* ifdnef NTU_GLOBAL_CC */
+
+	ntutils_t *ntutils = ntu_get();
+	ntucc_t sel_cc = ntutils->sel_cc;
+
+#endif /* ifndef NTU_GLOBAL_CC */
+
+	return ntu_get_reg_args_ex(arg_count, args, sel_cc);
 }
 
 nerror_t NTHREAD_API ntu_get_args(uint8_t arg_count, void **args)
@@ -532,30 +537,35 @@ nerror_t NTHREAD_API ntu_get_args(uint8_t arg_count, void **args)
 	if (reg_arg_count > arg_count)
 		reg_arg_count = arg_count;
 
-	ntu_get_reg_args(reg_arg_count, args);
+	ntu_get_reg_args_ex(reg_arg_count, args, sel_cc);
 
 	uint8_t push_arg_count = arg_count - reg_arg_count;
 	if (push_arg_count > 0) {
 		void *rsp = NTHREAD_GET_OREG(nthread, NTHREAD_RSP);
 		void *wpos = rsp + NTUCC_GET_STACK_ADD(sel_cc);
 
-		ntmem_t *ntmem = ntutils->stack_helper;
-		NTM_SET_REMOTE(ntmem, wpos);
+		size_t push_args_size = sizeof(void *) * push_arg_count;
+		void **push_args = args + reg_arg_count;
 
-		nttunnel_t *nttunnel = ntu_nttunnel();
-		void **push_args = (void *)ntm_pull_with_tunnel_ex(
-			ntmem, nttunnel, sizeof(void *) * push_arg_count);
+		if (HAS_ERR(ntu_read_memory(wpos, (void *)push_args,
+					    push_args_size)))
+			return GET_ERR(NTUTILS_READ_MEMORY_ERROR);
 
-		uint8_t i;
+		if ((sel_cc & NTUCC_REVERSE_OP) != 0) {
+			void **push_args_copy = N_ALLOC(push_args_size);
+			if (push_args_copy == NULL)
+				return GET_ERR(NTUTILS_ALLOC_ERROR);
 
-		bool reverse = (sel_cc & NTUCC_REVERSE_OP) != 0;
-		if (reverse) {
-			for (i = 0; i < push_arg_count; i++)
-				args[reg_arg_count + i] =
-					push_args[push_arg_count - i - 1];
-		} else
-			memcpy(args + reg_arg_count, push_args,
-			       push_arg_count * sizeof(void *));
+			memcpy(push_args_copy, push_args, push_args_size);
+
+			uint8_t i;
+			uint8_t helper = push_arg_count - 1;
+			for (i = 0; i < push_arg_count; i++) {
+				push_args[i] = push_args_copy[helper - i];
+			}
+
+			N_FREE(push_args_copy);
+		}
 	}
 
 	return N_OK;
