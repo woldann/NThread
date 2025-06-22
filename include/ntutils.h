@@ -90,6 +90,8 @@ struct ntutils {
 	ntucc_t sel_cc;
 
 	nttunnel_t nttunnel;
+	int8_t stack_helper[255 * sizeof(void *)];
+
 	nthread_t nthread;
 };
 

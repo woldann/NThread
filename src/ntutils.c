@@ -421,9 +421,7 @@ nerror_t NTHREAD_API ntu_set_args_v(uint8_t arg_count, va_list args)
 	ntmem_t *ntmem;
 	if (need_push) {
 		push_args_size = push_arg_count * sizeof(void *);
-		push_args = N_ALLOC(push_args_size);
-		if (push_args == NULL)
-			return GET_ERR(NTUTILS_READ_MEMORY_ERROR);
+		push_args = (void **)ntutils->stack_helper;
 	}
 
 	uint8_t push_arg_pos;
@@ -552,10 +550,7 @@ nerror_t NTHREAD_API ntu_get_args(uint8_t arg_count, void **args)
 			return GET_ERR(NTUTILS_READ_MEMORY_ERROR);
 
 		if ((sel_cc & NTUCC_REVERSE_OP) != 0) {
-			void **push_args_copy = N_ALLOC(push_args_size);
-			if (push_args_copy == NULL)
-				return GET_ERR(NTUTILS_ALLOC_ERROR);
-
+			void **push_args_copy = (void **)ntutils->stack_helper;
 			memcpy(push_args_copy, push_args, push_args_size);
 
 			uint8_t i;
@@ -563,8 +558,6 @@ nerror_t NTHREAD_API ntu_get_args(uint8_t arg_count, void **args)
 			for (i = 0; i < push_arg_count; i++) {
 				push_args[i] = push_args_copy[helper - i];
 			}
-
-			N_FREE(push_args_copy);
 		}
 	}
 
