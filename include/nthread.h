@@ -39,7 +39,7 @@
 #include "nerror.h"
 
 #if !(defined(__x86_64__) || defined(__amd64__) || defined(__LP64__) || \
-      defined(_LP64))
+      defined(_LP64) || defined(_WIN64))
 #error "NThread only works on x86_64 systems."
 #endif
 
