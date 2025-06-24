@@ -27,7 +27,7 @@
 #include "ntime.h"
 #include "log.h"
 
-#ifdef __WIN32
+#ifdef _WIN32
 
 ntid_t NTHREAD_API nthread_get_id(nthread_t *nthread)
 {
@@ -47,7 +47,7 @@ bool NTHREAD_API nthread_is_waiting(nthread_t *nthread)
 	       (CONTEXT_INTEGER | CONTEXT_CONTROL);
 }
 
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 static void *nthread_calc_stack(void *rsp)
 {
@@ -74,7 +74,7 @@ nerror_t NTHREAD_API nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
 	if (push_addr == NULL || sleep_addr == NULL)
 		return NTHREAD_ERROR_INVALID_ARGS;
 
-#ifdef __WIN32
+#ifdef _WIN32
 
 	DWORD access = THREAD_GET_CONTEXT | THREAD_SET_CONTEXT;
 
@@ -89,18 +89,18 @@ nerror_t NTHREAD_API nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
 	if (thread == NULL)
 		return GET_ERR(NTHREAD_OPEN_THREAD_ERROR);
 
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 	nthread->thread = thread;
 	nthread->sleep_addr = sleep_addr;
 	nthread->timeout = (flags & 0x0f);
 
-#ifdef __WIN32
+#ifdef _WIN32
 
 	nthread->o_ctx.ContextFlags = 0;
 	nthread->n_ctx.ContextFlags = CONTEXT_ALL;
 
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 	if ((flags & NTHREAD_FLAG_DONT_SUSPEND) == 0)
 		RET_ERR(nthread_suspend(nthread));
@@ -109,7 +109,7 @@ nerror_t NTHREAD_API nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
 	if (HAS_ERR(error_helper))
 		goto nthread_init_resume_and_ret;
 
-#ifdef __WIN32
+#ifdef _WIN32
 
 	nthread_copy_ncontext(nthread);
 
@@ -123,7 +123,7 @@ nerror_t NTHREAD_API nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
 	NTHREAD_SET_REG(nthread, NTHREAD_RSP, new_rsp);
 	NTHREAD_SET_REG(nthread, push_reg_offset, sleep_addr);
 
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 	error_helper = nthread_set_regs(nthread);
 	if (HAS_ERR(error_helper)) {
@@ -171,7 +171,7 @@ nerror_t NTHREAD_API nthread_init(nthread_t *nthread, ntid_t thread_id,
 
 void NTHREAD_API nthread_destroy(nthread_t *nthread)
 {
-#ifdef __WIN32
+#ifdef _WIN32
 
 	if (nthread->o_ctx.ContextFlags != 0) {
 		memcpy((void *)&nthread->n_ctx, (void *)&nthread->o_ctx,
@@ -185,7 +185,7 @@ void NTHREAD_API nthread_destroy(nthread_t *nthread)
 		NTHREAD_SET_INVALID(nthread);
 	}
 
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 }
 
 void *NTHREAD_API nthread_stack_begin(nthread_t *nthread)
@@ -200,7 +200,7 @@ nerror_t NTHREAD_API nthread_suspend(nthread_t *nthread)
 	LOG_INFO("nthread_suspend(nthread_id=%ld)", NTHREAD_GET_ID(nthread));
 #endif /* ifdef LOG_LEVEL_2 */
 
-#ifdef __WIN32
+#ifdef _WIN32
 
 	DWORD count = SuspendThread(nthread->thread);
 
@@ -219,7 +219,7 @@ nerror_t NTHREAD_API nthread_suspend(nthread_t *nthread)
 		return GET_ERR(NTHREAD_SUSPEND_ERROR);
 
 #endif /* infdef LOG_LEVEL_1 */
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 	return N_OK;
 }
@@ -232,7 +232,7 @@ nerror_t NTHREAD_API nthread_resume(nthread_t *nthread)
 		NTHREAD_GET_ID(nthread));
 #endif /* ifdef LOG_LEVEL_2 */
 
-#ifdef __WIN32
+#ifdef _WIN32
 
 	DWORD count = ResumeThread(nthread->thread);
 
@@ -251,31 +251,31 @@ nerror_t NTHREAD_API nthread_resume(nthread_t *nthread)
 		return GET_ERR(NTHREAD_RESUME_ERROR);
 
 #endif /* infdef LOG_LEVEL_1 */
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 	return N_OK;
 }
 
 nerror_t NTHREAD_API nthread_get_regs(nthread_t *nthread)
 {
-#ifdef __WIN32
+#ifdef _WIN32
 
 	if (!GetThreadContext(nthread->thread, &nthread->n_ctx))
 		return GET_ERR(NTHREAD_GET_CONTEXT_ERROR);
 
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 	return N_OK;
 }
 
 nerror_t NTHREAD_API nthread_set_regs(nthread_t *nthread)
 {
-#ifdef __WIN32
+#ifdef _WIN32
 
 	if (!SetThreadContext(nthread->thread, &nthread->n_ctx))
 		return GET_ERR(NTHREAD_SET_CONTEXT_ERROR);
 
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 	return N_OK;
 }
@@ -298,9 +298,9 @@ nerror_t NTHREAD_API nthread_wait_ex(nthread_t *nthread, uint32_t sleep)
 		end = 0;
 
 	while (true) {
-#ifdef __WIN32
+#ifdef _WIN32
 		Sleep((DWORD)sleep);
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 		RET_ERR(nthread_get_regs(nthread));
 

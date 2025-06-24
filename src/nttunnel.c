@@ -47,7 +47,7 @@ void *_ntt_create_path(ntmem_t *ntmem, nfile_path_t path)
 
 void *_ntt_create_temp_path(ntmem_t *ntmem)
 {
-#ifdef __WIN32
+#ifdef _WIN32
 
 	void *local = NTM_LOCAL(ntmem);
 	DWORD temp_path_len = GetTempPathW(MAX_PATH, (void *)local);
@@ -58,7 +58,7 @@ void *_ntt_create_temp_path(ntmem_t *ntmem)
 	if (unum == 0)
 		return NULL;
 
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 	return local;
 }
@@ -74,12 +74,12 @@ nerror_t _ntt_init_fschan(nttunnel_t *nttunnel, nttunnel_fschan_t *fschan,
 			return GET_ERR(NTTUNNEL_CREATE_TEMP_PATH_ERROR);
 	}
 
-#ifdef __WIN32
+#ifdef _WIN32
 
 	static const wchar_t mode_read[] = L"rb";
 	static const wchar_t mode_write[] = L"wb";
 
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 	int8_t mode_len;
 	void *mode;
@@ -107,10 +107,10 @@ nerror_t _ntt_init_fschan(nttunnel_t *nttunnel, nttunnel_fschan_t *fschan,
 		fschan->path = NULL;
 
 #ifdef LOG_LEVEL_2
-#ifdef __WIN32
+#ifdef _WIN32
 	LOG_INFO("ntt_fschan_init(path=%ls, mode=%ls, flags(%02x)", local,
 		 local + temp_path_size, flags);
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 #endif /* ifdef LOG_LEVEL_2 */
 
 	if (read)

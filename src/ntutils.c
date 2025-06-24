@@ -37,9 +37,9 @@
 #include <wchar.h>
 
 struct ntutils_tfunctions {
-#ifdef __WIN32
+#ifdef _WIN32
 	void *fopen;
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 	void *memset;
 	void *malloc;
@@ -50,25 +50,25 @@ struct ntutils_tfunctions {
 	void *free;
 } ntu_funcs;
 
-#ifdef __WIN32
+#ifdef _WIN32
 DWORD ntu_tls_index;
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 ntutils_t *NTHREAD_API _ntu_get(void)
 {
-#ifdef __WIN32
+#ifdef _WIN32
 	return (ntutils_t *)TlsGetValue(ntu_tls_index);
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 }
 
 nerror_t NTHREAD_API ntu_set(ntutils_t *ntutils)
 {
-#ifdef __WIN32
+#ifdef _WIN32
 
 	if (!TlsSetValue(ntu_tls_index, (void *)ntutils))
 		return GET_ERR(NTUTILS_TLS_SET_VALUE_ERROR);
 
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 	return N_OK;
 }
@@ -122,7 +122,7 @@ void *NTHREAD_API ntu_get_libc_base()
 {
 	void *ret;
 
-#ifdef __WIN32
+#ifdef _WIN32
 
 	ret = (void *)GetModuleHandleA("msvcrt");
 	if (ret == NULL) {
@@ -134,29 +134,29 @@ void *NTHREAD_API ntu_get_libc_base()
 		ret = (void *)GetModuleHandleA("msvcrt");
 	}
 
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 	return ret;
 }
 
 nerror_t NTHREAD_API ntu_global_init(void)
 {
-#ifdef __WIN32
+#ifdef _WIN32
 
 	ntu_tls_index = TlsAlloc();
 	if (ntu_tls_index == 0)
 		return GET_ERR(NTUTILS_TLS_ALLOC_ERROR);
 
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 	void *libc_base = ntu_get_libc_base();
 	if (libc_base == NULL)
 		return GET_ERR(NTUTILS_GET_LIBC_BASE_ERROR);
 
-#ifdef __WIN32
+#ifdef _WIN32
 	char func_names[] =
 		"_wfopen\x05memsetmallocfwritefflushfclosefreadfree";
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 	int8_t i = 8;
 	int8_t pos = 0;
@@ -185,9 +185,9 @@ nerror_t NTHREAD_API ntu_global_init(void)
 		pos += i;
 		c--;
 
-#ifdef __WIN32
+#ifdef _WIN32
 		void *func = GetProcAddress((void *)libc_base, func_name);
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 		if (func == NULL)
 			return GET_ERR(NTUTILS_FUNC_INIT_ERROR + func_pos);
@@ -206,9 +206,9 @@ nerror_t NTHREAD_API ntu_global_init(void)
 void NTHREAD_API ntu_global_destroy(void)
 {
 	if (ntu_tls_index != 0) {
-#ifdef __WIN32
+#ifdef _WIN32
 		TlsFree(ntu_tls_index);
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 		ntu_tls_index = 0;
 	}

@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 	printf("enter tid: ");
 	scanf("%ld", &tid);
 
-#ifdef __WIN32
+#ifdef _WIN32
 
 	HANDLE thread = OpenThread(THREAD_ALL_ACCESS, FALSE, tid);
 	if (thread == NULL) {
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 		return 0x33;
 	}
 
-#endif /* ifdef __WIN32 */
+#endif /* ifdef _WIN32 */
 
 	LOG_INFO("%lld bytes writed to %ld", write_len, pid);
 

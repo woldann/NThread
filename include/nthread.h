@@ -43,11 +43,11 @@
 #error "NThread only works on x86_64 systems."
 #endif
 
-#if !(defined(__WIN32) || defined(__linux__))
+#if !(defined(_WIN32) || defined(__linux__))
 #error "NThread unsupported os."
 #endif // OS Check
 
-#ifdef __WIN32
+#ifdef _WIN32
 
 #include <windows.h>
 
@@ -127,7 +127,7 @@ typedef DWORD ntid_t;
 typedef HANDLE nthread_handle_t;
 typedef CONTEXT nthread_regs_t;
 
-#else // !__WIN32
+#else // !_WIN32
 
 #include <sys/types.h>
 #include <sys/ptrace.h>
@@ -139,7 +139,7 @@ typedef struct user_regs_struct nthread_regs_t;
 
 #define NTHREAD_GET_ID(nthread) (((nthread_t *)nthread)->thread)
 
-#endif // !__WIN32
+#endif // !_WIN32
 
 #define NTHREAD_DEFAULT_WAIT_MS 0x00
 #define NTHREAD_DEFAULT_TIMEOUT 0x00
@@ -167,7 +167,7 @@ typedef struct {
 	nthread_regs_t o_ctx;
 } nthread_t;
 
-#ifdef __WIN32
+#ifdef _WIN32
 
 #ifndef NTHREAD_API
 #define NTHREAD_API NEPTUNE_API
@@ -180,14 +180,14 @@ ntid_t NTHREAD_API nthread_get_id(nthread_t *nthread);
 
 #define NTHREAD_GET_ID(nthread) nthread_get_id(nthread)
 
-#else // !__WIN32
+#else // !_WIN32
 
 #define NTHREAD_IS_VALID(nthread) ((nthread)->thread != 0)
 #define NTHREAD_SET_INVALID(nthread) ((nthread)->thread = 0)
 
 #define NTHREAD_GET_ID(nthread) ((nthread)->thread)
 
-#endif // !__WIN32
+#endif // !_WIN32
 
 #define NTHREAD_GET_REG(nthread, reg) \
 	(((void **)(((void *)&(nthread)->n_ctx) + reg))[0])

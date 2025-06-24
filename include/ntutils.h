@@ -40,15 +40,15 @@
 #include "nthread.h"
 #include "ntucc.h"
 
-#ifdef __WIN32
+#ifdef _WIN32
 #define NTU_DEFAULT_CC NTUCC_WINDOWS_X64
 #define NTU_DEFAULT_PFA_CC NTUCC_WINDOWS_X64_PASS_RCX
 #define NTU_DEFAULT_CC_FA NTHREAD_RCX
-#else // !__WIN32
+#else // !_WIN32
 #define NTU_DEFAULT_CC NTUCC_CDECL
 #define NTU_DEFAULT_PFA_CC NTUCC_CDECL_PASS_
 #define NTU_DEFAULT_CC_FA NTHREAD_RCX
-#endif // !__WIN32
+#endif // !_WIN32
 
 #define NTUTILS_ERROR 0x7340
 
@@ -79,9 +79,9 @@
 
 #if !defined(NTUTILS_DISABLE_GLOBAL_CC) || NTUTILS_DISABLE_GLOBAL_CC != 1
 
-#ifdef __WIN32
+#ifdef _WIN32
 #define NTU_GLOBAL_CC NTU_DEFAULT_CC
-#endif // __WIN32
+#endif // _WIN32
 
 #endif // !defined(NTUTILS_DISABLE_GLOBAL_CC) || NTUTILS_DISABLE_GLOBAL_CC != 1
 
