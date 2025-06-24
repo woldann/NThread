@@ -51,7 +51,7 @@ NTHREAD_API bool nthread_is_waiting(nthread_t *nthread)
 
 static void *nthread_calc_stack(void *rsp)
 {
-	return rsp + (16 - ((int64_t)(rsp) % 16));
+	return ((int8_t *)rsp) + (16 - ((int64_t)(rsp) % 16));
 }
 
 static void nthread_copy_ncontext(nthread_t *nthread)
@@ -119,7 +119,7 @@ NTHREAD_API nerror_t nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
 
 	NTHREAD_SET_REG(nthread, NTHREAD_RIP, push_addr);
 
-	void *new_rsp = nthread_calc_stack(rsp + NTHREAD_STACK_ADD);
+	void *new_rsp = nthread_calc_stack((void*)((int8_t *)rsp + NTHREAD_STACK_ADD));
 	NTHREAD_SET_REG(nthread, NTHREAD_RSP, new_rsp);
 	NTHREAD_SET_REG(nthread, push_reg_offset, sleep_addr);
 
@@ -190,7 +190,8 @@ NTHREAD_API void nthread_destroy(nthread_t *nthread)
 
 NTHREAD_API void *nthread_stack_begin(nthread_t *nthread)
 {
-	void *rsp = NTHREAD_GET_OREG(nthread, NTHREAD_RSP) + NTHREAD_STACK_ADD;
+	void *rsp = (void*) (((int8_t *)NTHREAD_GET_OREG(nthread, NTHREAD_RSP)) + NTHREAD_STACK_ADD);
+	
 	return nthread_calc_stack(rsp);
 }
 
@@ -334,7 +335,7 @@ NTHREAD_API nerror_t nthread_call(nthread_t *nthread, void *fun_addr,
 	NTHREAD_SET_REG(nthread, NTHREAD_RIP, fun_addr);
 
 	void *rsp = nthread_stack_begin(nthread);
-	NTHREAD_SET_REG(nthread, NTHREAD_RSP, rsp - sizeof(fun_addr));
+	NTHREAD_SET_REG(nthread, NTHREAD_RSP, (void*)((int8_t *)rsp - sizeof(fun_addr)));
 
 	RET_ERR(nthread_set_regs(nthread));
 	RET_ERR(nthread_wait(nthread));

@@ -111,7 +111,7 @@ NTHREAD_API ntutils_t *ntu_resize(size_t new_size);
 
 NTHREAD_API void _ntu_set_cc(ntucc_t cc);
 
-#define ntu_set_cc(cc) _ntu_set_default_cc(cc)
+#define ntu_set_cc(cc) _ntu_set_cc(cc)
 
 NTHREAD_API void _ntu_set_default_cc();
 
@@ -127,7 +127,7 @@ NTHREAD_API ntutils_t *_ntu_o(ntucc_t cc);
 	do {           \
 	} while (0)
 
-#define ntu_set_default_cc(cc) \
+#define ntu_set_default_cc() \
 	do {                   \
 	} while (0)
 

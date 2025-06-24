@@ -94,7 +94,7 @@ nerror_t _ntt_init_fschan(nttunnel_t *nttunnel, nttunnel_fschan_t *fschan,
 
 	void *local = NTM_LOCAL(ntmem);
 	size_t temp_path_size = NFILE_PATH_GET_SIZE(local);
-	memcpy(local + temp_path_size, mode, mode_len);
+	memcpy((void*)((int8_t *)local + temp_path_size), mode, mode_len);
 
 	bool save_path = (flags & NTTUNNEL_FSCHAN_DONT_SAVE_PATH) == 0;
 	if (save_path) {
@@ -109,7 +109,7 @@ nerror_t _ntt_init_fschan(nttunnel_t *nttunnel, nttunnel_fschan_t *fschan,
 #ifdef LOG_LEVEL_2
 #ifdef _WIN32
 	LOG_INFO("ntt_fschan_init(path=%ls, mode=%ls, flags(%02x)", local,
-		 local + temp_path_size, flags);
+		 (void*)((int8_t *)local + temp_path_size), flags);
 #endif /* ifdef _WIN32 */
 #endif /* ifdef LOG_LEVEL_2 */
 
@@ -125,7 +125,7 @@ nerror_t _ntt_init_fschan(nttunnel_t *nttunnel, nttunnel_fschan_t *fschan,
 	if (remote == NULL)
 		return GET_ERR(NTTUNNEL_NTM_PUSH_ERROR);
 
-	fschan->remote_file = ntu_fopen(remote, remote + temp_path_size);
+	fschan->remote_file = ntu_fopen(remote, (void*)((int8_t *)remote + temp_path_size));
 	if (fschan->remote_file == NULL)
 		return GET_ERR(NTTUNNEL_NTU_FOPEN_ERROR);
 

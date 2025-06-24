@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 
 	LOG_INFO("%lld bytes writed to %ld", write_len, pid);
 
-	if (HAS_ERR(ntu_attach(tid, push_sleep_addr, push_sleep_addr + 2))) {
+	if (HAS_ERR(ntu_attach(tid, push_sleep_addr, (void*)((int8_t*)push_sleep_addr + 2)))) {
 		LOG_INFO("ntu_init failed");
 		neptune_destroy();
 		return 0x06;

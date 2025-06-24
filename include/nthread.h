@@ -190,16 +190,16 @@ NTHREAD_API ntid_t nthread_get_id(nthread_t *nthread);
 #endif // !_WIN32
 
 #define NTHREAD_GET_REG(nthread, reg) \
-	(((void **)(((void *)&(nthread)->n_ctx) + reg))[0])
+	(((void **)(((int8_t *)&(nthread)->n_ctx) + reg))[0])
 
 #define NTHREAD_SET_REG(nthread, reg, set) \
-	(((void **)(((void *)&(nthread)->n_ctx) + (reg)))[0] = (void *)(set))
+	(((void **)(((int8_t *)&(nthread)->n_ctx) + (reg)))[0] = (void *)(set))
 
 #define NTHREAD_GET_OREG(nthread, reg) \
-	(((void **)(((void *)&(nthread)->o_ctx) + reg))[0])
+	(((void **)(((int8_t *)&(nthread)->o_ctx) + reg))[0])
 
 #define NTHREAD_SET_OREG(nthread, reg, set) \
-	(((void **)(((void *)&(nthread)->o_ctx) + (reg)))[0] = (void *)(set))
+	(((void **)(((int8_t *)&(nthread)->o_ctx) + (reg)))[0] = (void *)(set))
 
 NTHREAD_API bool nthread_is_waiting(nthread_t *nthread);
 

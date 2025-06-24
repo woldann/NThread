@@ -205,9 +205,9 @@ static void *ntm_push_with_tunnel_ex(ntmem_t *ntmem, nttunnel_t *nttunnel,
 	if (!ntt_can_write(nttunnel))
 		return NULL;
 
-	void *remote = NTM_REMOTE(ntmem) + begin;
-	void *local = NTM_LOCAL(ntmem) + begin;
-	void *local_cpy = NTM_LOCAL_CPY(ntmem) + begin;
+	void *remote = (void*)((int8_t *)NTM_REMOTE(ntmem) + begin);
+	void *local = (void*)((int8_t *)NTM_LOCAL(ntmem) + begin);
+	void *local_cpy = (void*)((int8_t *)NTM_LOCAL_CPY(ntmem) + begin);
 
 	if (HAS_ERR(ntt_write(nttunnel, remote, local, len)))
 		return NULL;
@@ -228,9 +228,9 @@ static void *ntm_push_with_memset_ex(ntmem_t *ntmem, size_t begin, size_t len)
 		 begin, len);
 #endif /* ifdef LOG_LEVEL3 */
 
-	void *remote = NTM_REMOTE(ntmem) + begin;
-	void *local = NTM_LOCAL(ntmem) + begin;
-	void *local_cpy = NTM_LOCAL_CPY(ntmem) + begin;
+	void *remote = (void*)((int8_t *)NTM_REMOTE(ntmem) + begin);
+	void *local = (void*)((int8_t *)NTM_LOCAL(ntmem) + begin);
+	void *local_cpy = (void*)((int8_t *)NTM_LOCAL_CPY(ntmem) + begin);
 
 	if (ntm_is_safe_write(ntmem)) {
 		if (HAS_ERR(ntu_write_with_memset(remote, local, len)))

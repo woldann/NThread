@@ -154,50 +154,28 @@ NTHREAD_API nerror_t ntu_global_init(void)
 		return GET_ERR(NTUTILS_GET_LIBC_BASE_ERROR);
 
 #ifdef _WIN32
-	char func_names[] =
-		"_wfopen\x05memsetmallocfwritefflushfclosefreadfree";
+
+	const char func_names[8][8] =
+		{"_wfopen", "memset", "malloc", "fwrite", "fflush", "fclose", "fread", "free"};
+
 #endif /* ifdef _WIN32 */
 
-	int8_t i = 8;
-	int8_t pos = 0;
-	int8_t c = 0;
-	int8_t func_pos = 0;
-
-	char func_name[i];
-
-	while (true) {
-		if (c == 0) {
-			char fc = (char)func_names[pos];
-			if (fc == 0)
-				break;
-
-			if (fc <= 5) {
-				c = fc;
-				pos++;
-			} else
-				c = 1;
-
-			i--;
-			func_name[i] = 0;
-		}
-
-		memcpy(func_name, func_names + pos, i);
-		pos += i;
-		c--;
+	int8_t i;
+	for (i = 0; i < 8; i++) {
+		const char *func_name = func_names[i];
 
 #ifdef _WIN32
 		void *func = GetProcAddress((void *)libc_base, func_name);
 #endif /* ifdef _WIN32 */
 
 		if (func == NULL)
-			return GET_ERR(NTUTILS_FUNC_INIT_ERROR + func_pos);
+			return GET_ERR(NTUTILS_FUNC_INIT_ERROR + i);
 
 #ifdef LOG_LEVEL_3
 		LOG_INFO("ntutils function(%s): %p", func_name, func);
 #endif /* ifdef LOG_LEVEL_3 */
 
-		((void **)&ntu_funcs)[func_pos] = func;
-		func_pos++;
+		((void **)&ntu_funcs)[i] = func;
 	}
 
 	return N_OK;
@@ -287,7 +265,7 @@ NTHREAD_API nerror_t ntu_write_with_memset_value(void *dest, const void *source,
 				break;
 		}
 
-		void *addr = ntu_memset(dest + i, ms_value, j - i);
+		void *addr = ntu_memset((void*)((int8_t *)dest + i), ms_value, j - i);
 		if (addr == NULL)
 			return GET_ERR(NTUTILS_NTU_MEMSET_ERROR);
 
@@ -318,7 +296,7 @@ NTHREAD_API nerror_t ntu_write_with_memset_dest(void *dest, const void *source,
 				break;
 		}
 
-		void *addr = ntu_memset(dest + i, ms_value, j - i);
+		void *addr = ntu_memset((void*)((int8_t *)dest + i), ms_value, j - i);
 		if (addr == NULL)
 			return GET_ERR(NTUTILS_NTU_MEMSET_ERROR);
 
@@ -339,7 +317,7 @@ NTHREAD_API nerror_t ntu_write_with_memset(void *dest, const void *source,
 				break;
 		}
 
-		void *addr = ntu_memset(dest + i, ms_value, j - i);
+		void *addr = ntu_memset((void*)((int8_t *)dest + i), ms_value, j - i);
 		if (addr == NULL)
 			return GET_ERR(NTUTILS_NTU_MEMSET_ERROR);
 
@@ -379,7 +357,7 @@ NTHREAD_API void ntu_set_reg_args(uint8_t arg_count, void **args)
 
 #endif /* ifndef NTU_GLOBAL_CC */
 
-	return ntu_set_reg_args_ex(arg_count, args, sel_cc);
+	ntu_set_reg_args_ex(arg_count, args, sel_cc);
 }
 
 NTHREAD_API nerror_t ntu_set_args_v(uint8_t arg_count, va_list args)
@@ -414,11 +392,10 @@ NTHREAD_API nerror_t ntu_set_args_v(uint8_t arg_count, va_list args)
 	bool need_push = push_arg_count > 0;
 
 	void *rsp = nthread_stack_begin(nthread);
-	void *wpos = rsp + NTUCC_GET_STACK_ADD(sel_cc);
+	void *wpos = (void*)((int8_t *)rsp + NTUCC_GET_STACK_ADD(sel_cc));
 
 	size_t push_args_size;
 	void **push_args;
-	ntmem_t *ntmem;
 	if (need_push) {
 		push_args_size = push_arg_count * sizeof(void *);
 		push_args = (void **)ntutils->stack_helper;
@@ -427,8 +404,6 @@ NTHREAD_API nerror_t ntu_set_args_v(uint8_t arg_count, va_list args)
 	uint8_t push_arg_pos;
 
 	void *reg_args[8];
-	nthread_reg_offset_t reg_offsets[8];
-
 	bool reverse = (sel_cc & NTUCC_REVERSE_OP) != 0;
 	if (reverse)
 		push_arg_pos = push_arg_count - 1;
@@ -502,7 +477,7 @@ NTHREAD_API void ntu_get_reg_args(uint8_t arg_count, void **args)
 
 #endif /* ifndef NTU_GLOBAL_CC */
 
-	return ntu_get_reg_args_ex(arg_count, args, sel_cc);
+	ntu_get_reg_args_ex(arg_count, args, sel_cc);
 }
 
 NTHREAD_API nerror_t ntu_get_args(uint8_t arg_count, void **args)
@@ -540,7 +515,7 @@ NTHREAD_API nerror_t ntu_get_args(uint8_t arg_count, void **args)
 	uint8_t push_arg_count = arg_count - reg_arg_count;
 	if (push_arg_count > 0) {
 		void *rsp = NTHREAD_GET_OREG(nthread, NTHREAD_RSP);
-		void *wpos = rsp + NTUCC_GET_STACK_ADD(sel_cc);
+		void *wpos = (void*)((int8_t *)rsp + NTUCC_GET_STACK_ADD(sel_cc));
 
 		size_t push_args_size = sizeof(void *) * push_arg_count;
 		void **push_args = args + reg_arg_count;
@@ -650,7 +625,7 @@ NTHREAD_API int ntu_fflush(FILE *fstream)
 	if (HAS_ERR(ntu_call(ntu_funcs.fflush, 1, fstream)))
 		return -1;
 
-	return (size_t)ntutils->ret_value;
+	return (int)(int64_t)ntutils->ret_value;
 }
 
 NTHREAD_API int ntu_fclose(FILE *fstream)
@@ -659,7 +634,7 @@ NTHREAD_API int ntu_fclose(FILE *fstream)
 	if (HAS_ERR(ntu_call(ntu_funcs.fclose, 1, fstream)))
 		return -1;
 
-	return (size_t)ntutils->ret_value;
+	return (int)(int64_t)ntutils->ret_value;
 }
 
 NTHREAD_API void *ntu_alloc_str(const char *str)
