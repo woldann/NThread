@@ -150,7 +150,7 @@ void _ntt_destroy_fschan(nttunnel_fschan_t *fschan)
 	_ntt_delete_path(fschan);
 }
 
-bool NTHREAD_API ntt_can_read(nttunnel_t *nttunnel)
+NTHREAD_API bool ntt_can_read(nttunnel_t *nttunnel)
 {
 	if (nttunnel == NULL)
 		return false;
@@ -158,7 +158,7 @@ bool NTHREAD_API ntt_can_read(nttunnel_t *nttunnel)
 	return nttunnel->read.remote_file != NULL;
 }
 
-bool NTHREAD_API ntt_can_write(nttunnel_t *nttunnel)
+NTHREAD_API bool ntt_can_write(nttunnel_t *nttunnel)
 {
 	if (nttunnel == NULL)
 		return false;
@@ -166,7 +166,7 @@ bool NTHREAD_API ntt_can_write(nttunnel_t *nttunnel)
 	return nttunnel->write.remote_file != NULL;
 }
 
-nerror_t NTHREAD_API ntt_init_ex(nttunnel_t *nttunnel,
+NTHREAD_API nerror_t ntt_init_ex(nttunnel_t *nttunnel,
 				 nttunnel_fschan_flags_t flags)
 {
 #ifdef LOG_LEVEL_2
@@ -196,12 +196,12 @@ ntt_init_ex_init_fschan_error:
 	return N_OK;
 }
 
-nerror_t NTHREAD_API ntt_init(nttunnel_t *nttunnel)
+NTHREAD_API nerror_t ntt_init(nttunnel_t *nttunnel)
 {
 	return ntt_init_ex(nttunnel, NTTUNNEL_FSCHAN_DEFAULT_FLAGS);
 }
 
-void NTHREAD_API ntt_destroy(nttunnel_t *nttunnel)
+NTHREAD_API void ntt_destroy(nttunnel_t *nttunnel)
 {
 	if (nttunnel == NULL)
 		return;
@@ -279,7 +279,7 @@ nerror_t _ntt_fschan_reset(nttunnel_t *nttunnel, nttunnel_fschan_t *fschan,
 	return N_OK;
 }
 
-nerror_t NTHREAD_API ntt_read(nttunnel_t *nttunnel, const void *dest,
+NTHREAD_API nerror_t ntt_read(nttunnel_t *nttunnel, const void *dest,
 			      void *source, size_t length)
 {
 	nerror_t ret = _ntt_fschan_read(&nttunnel->read, dest, source, length);
@@ -297,7 +297,7 @@ ntt_read_return:
 	return ret;
 }
 
-nerror_t NTHREAD_API ntt_write(nttunnel_t *nttunnel, void *dest,
+NTHREAD_API nerror_t ntt_write(nttunnel_t *nttunnel, void *dest,
 			       const void *source, size_t length)
 {
 	nerror_t ret =

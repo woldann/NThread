@@ -85,14 +85,14 @@ typedef struct ntmem ntmem_t;
  *
  * @param ntmem Pointer to memory structure.
  */
-void NTHREAD_API ntm_enable_safe_write(ntmem_t *ntmem);
+NTHREAD_API void ntm_enable_safe_write(ntmem_t *ntmem);
 
 /**
  * @brief Disable safe write mode for memory synchronization.
  *
  * @param ntmem Pointer to memory structure.
  */
-void NTHREAD_API ntm_disable_safe_write(ntmem_t *ntmem);
+NTHREAD_API void ntm_disable_safe_write(ntmem_t *ntmem);
 
 /**
  * @brief Check if safe write mode is enabled.
@@ -100,21 +100,21 @@ void NTHREAD_API ntm_disable_safe_write(ntmem_t *ntmem);
  * @param ntmem Pointer to memory structure.
  * @return true if safe write mode is enabled, false otherwise.
  */
-bool NTHREAD_API ntm_is_safe_write(ntmem_t *ntmem);
+NTHREAD_API bool ntm_is_safe_write(ntmem_t *ntmem);
 
-void *NTHREAD_API ntm_reset_locals(ntmem_t *ntmem);
+NTHREAD_API void *ntm_reset_locals(ntmem_t *ntmem);
 
-void *NTHREAD_API ntm_reset_remote_ex(ntmem_t *ntmem, size_t length);
+NTHREAD_API void *ntm_reset_remote_ex(ntmem_t *ntmem, size_t length);
 
-void *NTHREAD_API ntm_reset_remote(ntmem_t *ntmem);
+NTHREAD_API void *ntm_reset_remote(ntmem_t *ntmem);
 
-nerror_t NTHREAD_API ntm_reset(ntmem_t *ntmem);
+NTHREAD_API nerror_t ntm_reset(ntmem_t *ntmem);
 
-void *NTHREAD_API NTHREAD_API ntm_alloc_remote(ntmem_t *ntmem);
+NTHREAD_API void *NTHREAD_API ntm_alloc_remote(ntmem_t *ntmem);
 
-void NTHREAD_API ntm_free_remote(ntmem_t *ntmem);
+NTHREAD_API void ntm_free_remote(ntmem_t *ntmem);
 
-void *NTHREAD_API ntm_alloc_remote_and_reset(ntmem_t *ntmem);
+NTHREAD_API void *ntm_alloc_remote_and_reset(ntmem_t *ntmem);
 
 /**
  * @brief Create and initialize a new memory structure with specific length.
@@ -122,29 +122,29 @@ void *NTHREAD_API ntm_alloc_remote_and_reset(ntmem_t *ntmem);
  * @param length Memory size in bytes.
  * @return Pointer to newly created memory structure.
  */
-ntmem_t *NTHREAD_API ntm_create_ex(size_t length);
+NTHREAD_API ntmem_t *ntm_create_ex(size_t length);
 
 /**
  * @brief Create and initialize a memory structure with default size.
  *
  * @return Pointer to newly created memory structure.
  */
-ntmem_t *NTHREAD_API ntm_create();
+NTHREAD_API ntmem_t *ntm_create();
 
-ntmem_t *NTHREAD_API ntm_create_with_alloc_ex(size_t length);
+NTHREAD_API ntmem_t *ntm_create_with_alloc_ex(size_t length);
 
-ntmem_t *NTHREAD_API ntm_create_with_alloc();
+NTHREAD_API ntmem_t *ntm_create_with_alloc();
 
-ntmem_t *NTHREAD_API ntm_create_from_remote(void *remote, size_t length);
+NTHREAD_API ntmem_t *ntm_create_from_remote(void *remote, size_t length);
 
 /**
  * @brief Delete memory structure.
  *
  * @param ntmem Pointer to memory structure.
  */
-void NTHREAD_API ntm_delete(ntmem_t *ntmem);
+NTHREAD_API void ntm_delete(ntmem_t *ntmem);
 
-void NTHREAD_API ntm_delete_and_free(ntmem_t *ntmem);
+NTHREAD_API void ntm_delete_and_free(ntmem_t *ntmem);
 
 /**
  * @brief Delete the ntmem structure and detach remote memory pointer.
@@ -158,9 +158,9 @@ void NTHREAD_API ntm_delete_and_free(ntmem_t *ntmem);
  * @param ntmem Pointer to memory structure.
  * @return Pointer to remote memory address in target process.
  */
-void *NTHREAD_API ntm_delete_and_detach(ntmem_t *ntmem);
+NTHREAD_API void *ntm_delete_and_detach(ntmem_t *ntmem);
 
-void *NTHREAD_API ntm_pull_with_tunnel_ex(ntmem_t *ntmem, nttunnel_t *nttunnel,
+NTHREAD_API void *ntm_pull_with_tunnel_ex(ntmem_t *ntmem, nttunnel_t *nttunnel,
 					  size_t len);
 
 /**
@@ -170,7 +170,7 @@ void *NTHREAD_API ntm_pull_with_tunnel_ex(ntmem_t *ntmem, nttunnel_t *nttunnel,
  * @param nttunnel Associated tunnel structure.
  * @return Pointer to updated buffer.
  */
-void *NTHREAD_API ntm_pull_with_tunnel(ntmem_t *ntmem, nttunnel_t *nttunnel);
+NTHREAD_API void *ntm_pull_with_tunnel(ntmem_t *ntmem, nttunnel_t *nttunnel);
 
 /**
  * @brief Push memory buffer into target process using tunnel.
@@ -179,7 +179,7 @@ void *NTHREAD_API ntm_pull_with_tunnel(ntmem_t *ntmem, nttunnel_t *nttunnel);
  * @param nttunnel Associated tunnel structure.
  * @return Pointer to pushed data location.
  */
-void *NTHREAD_API ntm_push_with_tunnel(ntmem_t *ntmem, nttunnel_t *nttunnel);
+NTHREAD_API void *ntm_push_with_tunnel(ntmem_t *ntmem, nttunnel_t *nttunnel);
 
 /**
  * @brief Push memory buffer using memset as a writing method.
@@ -187,7 +187,7 @@ void *NTHREAD_API ntm_push_with_tunnel(ntmem_t *ntmem, nttunnel_t *nttunnel);
  * @param ntmem Pointer to memory structure.
  * @return Pointer to pushed data location.
  */
-void *NTHREAD_API ntm_push_with_memset(ntmem_t *ntmem);
+NTHREAD_API void *ntm_push_with_memset(ntmem_t *ntmem);
 
 /**
  * @brief Push memory buffer into target using default method (tunnel or memset).
@@ -196,7 +196,7 @@ void *NTHREAD_API ntm_push_with_memset(ntmem_t *ntmem);
  * @param nttunnel Associated tunnel structure.
  * @return Pointer to pushed data location.
  */
-void *NTHREAD_API ntm_push_ex(ntmem_t *ntmem, nttunnel_t *nttunnel);
+NTHREAD_API void *ntm_push_ex(ntmem_t *ntmem, nttunnel_t *nttunnel);
 
 /**
  * @brief Push memory buffer into target using default method.
@@ -206,6 +206,6 @@ void *NTHREAD_API ntm_push_ex(ntmem_t *ntmem, nttunnel_t *nttunnel);
  * @param ntmem Pointer to memory structure.
  * @return Pointer to pushed data location.
  */
-void *NTHREAD_API ntm_push(ntmem_t *ntmem);
+NTHREAD_API void *ntm_push(ntmem_t *ntmem);
 
 #endif // !__NTUTILS_BUFFER_H__

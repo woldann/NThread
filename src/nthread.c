@@ -29,12 +29,12 @@
 
 #ifdef _WIN32
 
-ntid_t NTHREAD_API nthread_get_id(nthread_t *nthread)
+NTHREAD_API ntid_t nthread_get_id(nthread_t *nthread)
 {
 	return GetThreadId(nthread->thread);
 }
 
-bool NTHREAD_API nthread_is_waiting(nthread_t *nthread)
+NTHREAD_API bool nthread_is_waiting(nthread_t *nthread)
 {
 	if (!NTHREAD_IS_VALID(nthread))
 		return false;
@@ -60,7 +60,7 @@ static void nthread_copy_ncontext(nthread_t *nthread)
 	       sizeof(CONTEXT));
 }
 
-nerror_t NTHREAD_API nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
+NTHREAD_API nerror_t nthread_init_ex(nthread_t *nthread, ntid_t thread_id,
 				     nthread_reg_offset_t push_reg_offset,
 				     void *push_addr, void *sleep_addr,
 				     nthread_flags_t flags)
@@ -161,7 +161,7 @@ nthread_init_destroy_and_ret:
 	return N_OK;
 }
 
-nerror_t NTHREAD_API nthread_init(nthread_t *nthread, ntid_t thread_id,
+NTHREAD_API nerror_t nthread_init(nthread_t *nthread, ntid_t thread_id,
 				  nthread_reg_offset_t push_reg_offset,
 				  void *push_addr, void *sleep_addr)
 {
@@ -169,7 +169,7 @@ nerror_t NTHREAD_API nthread_init(nthread_t *nthread, ntid_t thread_id,
 			       sleep_addr, NTHREAD_DEFAULT_TIMEOUT);
 }
 
-void NTHREAD_API nthread_destroy(nthread_t *nthread)
+NTHREAD_API void nthread_destroy(nthread_t *nthread)
 {
 #ifdef _WIN32
 
@@ -188,13 +188,13 @@ void NTHREAD_API nthread_destroy(nthread_t *nthread)
 #endif /* ifdef _WIN32 */
 }
 
-void *NTHREAD_API nthread_stack_begin(nthread_t *nthread)
+NTHREAD_API void *nthread_stack_begin(nthread_t *nthread)
 {
 	void *rsp = NTHREAD_GET_OREG(nthread, NTHREAD_RSP) + NTHREAD_STACK_ADD;
 	return nthread_calc_stack(rsp);
 }
 
-nerror_t NTHREAD_API nthread_suspend(nthread_t *nthread)
+NTHREAD_API nerror_t nthread_suspend(nthread_t *nthread)
 {
 #ifdef LOG_LEVEL_2
 	LOG_INFO("nthread_suspend(nthread_id=%ld)", NTHREAD_GET_ID(nthread));
@@ -224,7 +224,7 @@ nerror_t NTHREAD_API nthread_suspend(nthread_t *nthread)
 	return N_OK;
 }
 
-nerror_t NTHREAD_API nthread_resume(nthread_t *nthread)
+NTHREAD_API nerror_t nthread_resume(nthread_t *nthread)
 {
 #ifdef LOG_LEVEL_2
 	LOG_INFO(
@@ -256,7 +256,7 @@ nerror_t NTHREAD_API nthread_resume(nthread_t *nthread)
 	return N_OK;
 }
 
-nerror_t NTHREAD_API nthread_get_regs(nthread_t *nthread)
+NTHREAD_API nerror_t nthread_get_regs(nthread_t *nthread)
 {
 #ifdef _WIN32
 
@@ -268,7 +268,7 @@ nerror_t NTHREAD_API nthread_get_regs(nthread_t *nthread)
 	return N_OK;
 }
 
-nerror_t NTHREAD_API nthread_set_regs(nthread_t *nthread)
+NTHREAD_API nerror_t nthread_set_regs(nthread_t *nthread)
 {
 #ifdef _WIN32
 
@@ -280,12 +280,12 @@ nerror_t NTHREAD_API nthread_set_regs(nthread_t *nthread)
 	return N_OK;
 }
 
-void NTHREAD_API nthread_set_timeout(nthread_t *nthread, uint8_t timeout_sec)
+NTHREAD_API void nthread_set_timeout(nthread_t *nthread, uint8_t timeout_sec)
 {
 	nthread->timeout = timeout_sec;
 }
 
-nerror_t NTHREAD_API nthread_wait_ex(nthread_t *nthread, uint32_t sleep)
+NTHREAD_API nerror_t nthread_wait_ex(nthread_t *nthread, uint32_t sleep)
 {
 	ntime_t end;
 	uint32_t timeout_sec = nthread->timeout;
@@ -316,12 +316,12 @@ nerror_t NTHREAD_API nthread_wait_ex(nthread_t *nthread, uint32_t sleep)
 	}
 }
 
-nerror_t NTHREAD_API nthread_wait(nthread_t *nthread)
+NTHREAD_API nerror_t nthread_wait(nthread_t *nthread)
 {
 	return nthread_wait_ex(nthread, NTHREAD_DEFAULT_WAIT_MS);
 }
 
-nerror_t NTHREAD_API nthread_call(nthread_t *nthread, void *fun_addr,
+NTHREAD_API nerror_t nthread_call(nthread_t *nthread, void *fun_addr,
 				  void **return_value)
 {
 #ifdef LOG_LEVEL_3

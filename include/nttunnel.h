@@ -114,7 +114,7 @@ typedef struct nttunnel nttunnel_t;
  * @param nttunnel Pointer to the tunnel structure.
  * @return true if reading is available; false otherwise.
  */
-bool NTHREAD_API ntt_can_read(nttunnel_t *nttunnel);
+NTHREAD_API bool ntt_can_read(nttunnel_t *nttunnel);
 
 /**
  * @brief Check if the tunnel is ready for writing.
@@ -122,7 +122,7 @@ bool NTHREAD_API ntt_can_read(nttunnel_t *nttunnel);
  * @param nttunnel Pointer to the tunnel structure.
  * @return true if writing is available; false otherwise.
  */
-bool NTHREAD_API ntt_can_write(nttunnel_t *nttunnel);
+NTHREAD_API bool ntt_can_write(nttunnel_t *nttunnel);
 
 /**
  * @brief Initialize the tunnel with specific FSCHAN flags.
@@ -131,7 +131,7 @@ bool NTHREAD_API ntt_can_write(nttunnel_t *nttunnel);
  * @param flags Flags controlling tunnel behavior.
  * @return Error code.
  */
-nerror_t NTHREAD_API ntt_init_ex(nttunnel_t *nttunnel,
+NTHREAD_API nerror_t ntt_init_ex(nttunnel_t *nttunnel,
 				 nttunnel_fschan_flags_t flags);
 
 /**
@@ -140,14 +140,14 @@ nerror_t NTHREAD_API ntt_init_ex(nttunnel_t *nttunnel,
  * @param nttunnel Pointer to the tunnel structure.
  * @return Error.
  */
-nerror_t NTHREAD_API ntt_init(nttunnel_t *nttunnel);
+NTHREAD_API nerror_t ntt_init(nttunnel_t *nttunnel);
 
 /**
  * @brief Clean up and release resources associated with the tunnel.
  *
  * @param nttunnel Pointer to the tunnel structure.
  */
-void NTHREAD_API ntt_destroy(nttunnel_t *nttunnel);
+NTHREAD_API void ntt_destroy(nttunnel_t *nttunnel);
 
 /**
  * @brief Read memory through the tunnel.
@@ -158,7 +158,7 @@ void NTHREAD_API ntt_destroy(nttunnel_t *nttunnel);
  * @param length Number of bytes to read.
  * @return Error code.
  */
-nerror_t NTHREAD_API ntt_read(nttunnel_t *nttunnel, const void *dest,
+NTHREAD_API nerror_t ntt_read(nttunnel_t *nttunnel, const void *dest,
 			      void *source, size_t length);
 
 /**
@@ -172,7 +172,7 @@ nerror_t NTHREAD_API ntt_read(nttunnel_t *nttunnel, const void *dest,
  * @param length Number of bytes to write.
  * @return Error code.
  */
-nerror_t NTHREAD_API ntt_write(nttunnel_t *nttunnel, void *dest,
+NTHREAD_API nerror_t ntt_write(nttunnel_t *nttunnel, void *dest,
 			       const void *source, size_t length);
 
 #endif // !__NTTUNNEL_H__

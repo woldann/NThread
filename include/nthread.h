@@ -176,7 +176,7 @@ typedef struct {
 #define NTHREAD_IS_VALID(nthread) ((nthread)->thread != NULL)
 #define NTHREAD_SET_INVALID(nthread) ((nthread)->thread = NULL)
 
-ntid_t NTHREAD_API nthread_get_id(nthread_t *nthread);
+NTHREAD_API ntid_t nthread_get_id(nthread_t *nthread);
 
 #define NTHREAD_GET_ID(nthread) nthread_get_id(nthread)
 
@@ -201,14 +201,14 @@ ntid_t NTHREAD_API nthread_get_id(nthread_t *nthread);
 #define NTHREAD_SET_OREG(nthread, reg, set) \
 	(((void **)(((void *)&(nthread)->o_ctx) + (reg)))[0] = (void *)(set))
 
-bool NTHREAD_API nthread_is_waiting(nthread_t *nthread);
+NTHREAD_API bool nthread_is_waiting(nthread_t *nthread);
 
-nerror_t NTHREAD_API nthread_init_ex(nthread_t *nthread, ntid_t ntid,
+NTHREAD_API nerror_t nthread_init_ex(nthread_t *nthread, ntid_t ntid,
 				     nthread_reg_offset_t push_reg_offset,
 				     void *push_addr, void *sleep_addr,
 				     nthread_flags_t flags);
 
-nerror_t NTHREAD_API nthread_init(nthread_t *nthread, ntid_t ntid,
+NTHREAD_API nerror_t nthread_init(nthread_t *nthread, ntid_t ntid,
 				  nthread_reg_offset_t push_reg_offset,
 				  void *push_addr, void *sleep_addr);
 
@@ -219,7 +219,7 @@ nerror_t NTHREAD_API nthread_init(nthread_t *nthread, ntid_t ntid,
  *
  * @param nthread Pointer to the NThread structure to destroy.
  */
-void NTHREAD_API nthread_destroy(nthread_t *nthread);
+NTHREAD_API void nthread_destroy(nthread_t *nthread);
 
 /**
  * @brief Retrieve the base address of the thread's stack.
@@ -227,7 +227,7 @@ void NTHREAD_API nthread_destroy(nthread_t *nthread);
  * @param nthread Pointer to the NThread structure.
  * @return Pointer to the beginning of the thread's stack.
  */
-void *NTHREAD_API nthread_stack_begin(nthread_t *nthread);
+NTHREAD_API void *nthread_stack_begin(nthread_t *nthread);
 
 /**
  * @brief Suspend execution of the target thread.
@@ -235,7 +235,7 @@ void *NTHREAD_API nthread_stack_begin(nthread_t *nthread);
  * @param nthread Pointer to the NThread structure.
  * @return Error code indicating success or failure.
  */
-nerror_t NTHREAD_API nthread_suspend(nthread_t *nthread);
+NTHREAD_API nerror_t nthread_suspend(nthread_t *nthread);
 
 /**
  * @brief Resume execution of a previously suspended thread.
@@ -243,7 +243,7 @@ nerror_t NTHREAD_API nthread_suspend(nthread_t *nthread);
  * @param nthread Pointer to the NThread structure.
  * @return Error code indicating success or failure.
  */
-nerror_t NTHREAD_API nthread_resume(nthread_t *nthread);
+NTHREAD_API nerror_t nthread_resume(nthread_t *nthread);
 
 /**
  * @brief Read the current CPU context (registers) of the target thread.
@@ -251,7 +251,7 @@ nerror_t NTHREAD_API nthread_resume(nthread_t *nthread);
  * @param nthread Pointer to the NThread structure.
  * @return Error code indicating success or failure.
  */
-nerror_t NTHREAD_API nthread_get_regs(nthread_t *nthread);
+NTHREAD_API nerror_t nthread_get_regs(nthread_t *nthread);
 
 /**
  * @brief Set the CPU context (registers) of the target thread.
@@ -261,9 +261,9 @@ nerror_t NTHREAD_API nthread_get_regs(nthread_t *nthread);
  * @param nthread Pointer to the NThread structure.
  * @return Error code indicating success or failure.
  */
-nerror_t NTHREAD_API nthread_set_regs(nthread_t *nthread);
+NTHREAD_API nerror_t nthread_set_regs(nthread_t *nthread);
 
-void NTHREAD_API nthread_set_timeout(nthread_t *nthread, uint8_t timeout_sec);
+NTHREAD_API void nthread_set_timeout(nthread_t *nthread, uint8_t timeout_sec);
 
 /**
  * @brief Wait for the thread to return from a function call, with timeout control.
@@ -274,7 +274,7 @@ void NTHREAD_API nthread_set_timeout(nthread_t *nthread, uint8_t timeout_sec);
  * @param sleep Timeout in milliseconds between each status check.
  * @return Error code indicating success, timeout, or failure.
  */
-nerror_t NTHREAD_API nthread_wait_ex(nthread_t *nthread, uint32_t sleep);
+NTHREAD_API nerror_t nthread_wait_ex(nthread_t *nthread, uint32_t sleep);
 
 /**
  * @brief Wait indefinitely until the thread returns from a function call.
@@ -282,7 +282,7 @@ nerror_t NTHREAD_API nthread_wait_ex(nthread_t *nthread, uint32_t sleep);
  * @param nthread Pointer to the NThread structure.
  * @return Error code indicating success or failure.
  */
-nerror_t NTHREAD_API nthread_wait(nthread_t *nthread);
+NTHREAD_API nerror_t nthread_wait(nthread_t *nthread);
 
 /**
  * @brief Execute a function inside the target process using the hijacked thread.
@@ -295,7 +295,7 @@ nerror_t NTHREAD_API nthread_wait(nthread_t *nthread);
  *
  * @return Error code indicating success or failure.
  */
-nerror_t NTHREAD_API nthread_call(nthread_t *nthread, void *function_address,
+NTHREAD_API nerror_t nthread_call(nthread_t *nthread, void *function_address,
 				  void **return_value);
 
 #endif // !__NSHELL_H__
