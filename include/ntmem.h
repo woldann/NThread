@@ -65,7 +65,8 @@ struct ntmem {
 	(ntmem->remote_mem = (set_remote_mem))
 #define NTM_REMOTE(ntmem) (ntmem->remote_mem)
 #define NTM_LOCAL(ntmem) ((void *)(ntmem + 1))
-#define NTM_LOCAL_CPY(ntmem) ((void*)(((int8_t *)NTM_LOCAL(ntmem)) + NTM_LENGTH(ntmem)))
+#define NTM_LOCAL_CPY(ntmem) \
+	((void *)(((int8_t *)NTM_LOCAL(ntmem)) + NTM_LENGTH(ntmem)))
 
 typedef struct ntmem ntmem_t;
 

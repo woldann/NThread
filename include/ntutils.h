@@ -128,7 +128,7 @@ NTHREAD_API ntutils_t *_ntu_o(ntucc_t cc);
 	} while (0)
 
 #define ntu_set_default_cc() \
-	do {                   \
+	do {                 \
 	} while (0)
 
 #define ntu_o(cc) ntu_get()

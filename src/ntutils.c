@@ -155,8 +155,8 @@ NTHREAD_API nerror_t ntu_global_init(void)
 
 #ifdef _WIN32
 
-	const char func_names[8][8] =
-		{"_wfopen", "memset", "malloc", "fwrite", "fflush", "fclose", "fread", "free"};
+	const char func_names[8][8] = { "_wfopen", "memset", "malloc", "fwrite",
+					"fflush",  "fclose", "fread",  "free" };
 
 #endif /* ifdef _WIN32 */
 
@@ -265,7 +265,8 @@ NTHREAD_API nerror_t ntu_write_with_memset_value(void *dest, const void *source,
 				break;
 		}
 
-		void *addr = ntu_memset((void*)((int8_t *)dest + i), ms_value, j - i);
+		void *addr = ntu_memset((void *)((int8_t *)dest + i), ms_value,
+					j - i);
 		if (addr == NULL)
 			return GET_ERR(NTUTILS_NTU_MEMSET_ERROR);
 
@@ -296,7 +297,8 @@ NTHREAD_API nerror_t ntu_write_with_memset_dest(void *dest, const void *source,
 				break;
 		}
 
-		void *addr = ntu_memset((void*)((int8_t *)dest + i), ms_value, j - i);
+		void *addr = ntu_memset((void *)((int8_t *)dest + i), ms_value,
+					j - i);
 		if (addr == NULL)
 			return GET_ERR(NTUTILS_NTU_MEMSET_ERROR);
 
@@ -317,7 +319,8 @@ NTHREAD_API nerror_t ntu_write_with_memset(void *dest, const void *source,
 				break;
 		}
 
-		void *addr = ntu_memset((void*)((int8_t *)dest + i), ms_value, j - i);
+		void *addr = ntu_memset((void *)((int8_t *)dest + i), ms_value,
+					j - i);
 		if (addr == NULL)
 			return GET_ERR(NTUTILS_NTU_MEMSET_ERROR);
 
@@ -392,7 +395,7 @@ NTHREAD_API nerror_t ntu_set_args_v(uint8_t arg_count, va_list args)
 	bool need_push = push_arg_count > 0;
 
 	void *rsp = nthread_stack_begin(nthread);
-	void *wpos = (void*)((int8_t *)rsp + NTUCC_GET_STACK_ADD(sel_cc));
+	void *wpos = (void *)((int8_t *)rsp + NTUCC_GET_STACK_ADD(sel_cc));
 
 	size_t push_args_size;
 	void **push_args;
@@ -515,7 +518,8 @@ NTHREAD_API nerror_t ntu_get_args(uint8_t arg_count, void **args)
 	uint8_t push_arg_count = arg_count - reg_arg_count;
 	if (push_arg_count > 0) {
 		void *rsp = NTHREAD_GET_OREG(nthread, NTHREAD_RSP);
-		void *wpos = (void*)((int8_t *)rsp + NTUCC_GET_STACK_ADD(sel_cc));
+		void *wpos =
+			(void *)((int8_t *)rsp + NTUCC_GET_STACK_ADD(sel_cc));
 
 		size_t push_args_size = sizeof(void *) * push_arg_count;
 		void **push_args = args + reg_arg_count;
