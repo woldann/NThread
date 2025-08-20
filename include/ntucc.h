@@ -30,8 +30,8 @@
  * calling conventions when working with ntutils-related function calls.
  */
 
-#ifndef __NTU_CC__
-#define __NTU_CC__
+#ifndef __NTUCC_H__
+#define __NTUCC_H__
 
 #include "neptune.h"
 
@@ -99,19 +99,21 @@ typedef int64_t ntucc_t;
 	 NTUCC_AUTO_CLEAN + sizeof(DWORD64) * 4)
 
 #ifdef NTUCC_WINDOWS_X64
+
 #define NTUCC_WINDOWS_X64_PASS_RCX                               \
 	((NTUCC_CREATE_ARG_MASK(NTUCC_RDX, NTUCC_R8, NTUCC_R9) | \
 	  NTUCC_AUTO_CLEAN) +                                    \
 	 sizeof(DWORD64) * 4)
+
 #endif // NTUCC_WINDOWS_X64
-
-#ifdef NTU_CDECL
-
-#endif // NTU_CDECL
 
 #define NTUCC_MAX_REGARG_COUNT 4
 
 #define NTUCC_GET_REGARG_COUNT(ntu_cc) (ntu_cc & NTUCC_HAS_REGARG_MASK)
 #define NTUCC_HAS_REGARG(ntu_cc) ((ntu_cc & NTUCC_HAS_REGARG_MASK) != 0)
 
-#endif // !__NTU_CC__
+#ifdef _WIN32
+#define NTUCC_DEFAULT NTUCC_WINDOWS_X64
+#endif // _WIN32
+
+#endif // !__NTUCC_H__
