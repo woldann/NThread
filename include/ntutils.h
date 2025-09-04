@@ -69,6 +69,7 @@
 #define NTUTILS_NTT_INIT_ERROR 0x734F
 #define NTUTILS_READ_MEMORY_ERROR 0x7350
 #define NTUTILS_WRITE_MEMORY_ERROR 0x7351
+#define NTUTILS_NTU_GET_ERROR 0x7352
 
 #define NTUTILS_FUNC_INIT_ERROR 0x7360
 #define NTUTILS_FUNC_INIT_ERROR_E (NTUTILS_FUNC_INIT_ERROR + 7)
@@ -101,7 +102,7 @@ NTHREAD_API ntutils_t *_ntu_get(void);
 
 NTHREAD_API nerror_t ntu_set(ntutils_t *ntutils);
 
-NTHREAD_API ntutils_t *ntu_resize(size_t new_size);
+NTHREAD_API nerror_t ntu_resize(size_t new_size);
 
 #define ntu_get() _ntu_get()
 

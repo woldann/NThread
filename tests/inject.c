@@ -33,6 +33,12 @@
 
 int8_t push_sleep[] = { 0x55, 0xc3, 0xeb, 0xfe };
 
+void thread_func(void)
+{
+	while (1)
+		Sleep(10);
+}
+
 int main(int argc, char *argv[])
 {
 	if (HAS_ERR(neptune_init()))
@@ -40,9 +46,14 @@ int main(int argc, char *argv[])
 
 	LOG_INFO("Neptune initilaized!");
 
-	ntid_t tid;
-	printf("enter tid: ");
-	scanf("%ld", &tid);
+	DWORD tid;
+	HANDLE create_thread = CreateThread(
+		NULL, 0, (LPTHREAD_START_ROUTINE)thread_func, NULL, 0, &tid);
+	if (create_thread == NULL) {
+		LOG_ERROR("Thread creation failed");
+		neptune_destroy();
+		return 0x01;
+	}
 
 #ifdef _WIN32
 
@@ -50,13 +61,16 @@ int main(int argc, char *argv[])
 	if (thread == NULL) {
 		LOG_ERROR("Thread not found");
 		neptune_destroy();
+		CloseHandle(create_thread);
 		return 0x30;
 	}
 
 	DWORD pid = GetProcessIdOfThread(thread);
 	HANDLE proc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
 	if (proc == NULL) {
+		LOG_ERROR("Process not found");
 		neptune_destroy();
+		CloseHandle(create_thread);
 		return 0x31;
 	}
 
@@ -65,7 +79,9 @@ int main(int argc, char *argv[])
 					       PAGE_EXECUTE_READWRITE);
 
 	if (push_sleep_addr == NULL) {
+		LOG_ERROR("Memory allocation failed");
 		neptune_destroy();
+		CloseHandle(create_thread);
 		return 0x32;
 	}
 
@@ -73,6 +89,7 @@ int main(int argc, char *argv[])
 	if (!WriteProcessMemory(proc, push_sleep_addr, push_sleep,
 				sizeof(push_sleep), &write_len)) {
 		neptune_destroy();
+		CloseHandle(create_thread);
 		return 0x33;
 	}
 
@@ -80,9 +97,11 @@ int main(int argc, char *argv[])
 
 	LOG_INFO("%lld bytes writed to %ld", write_len, pid);
 
-	if (HAS_ERR(ntu_attach(tid, push_sleep_addr, (void*)((int8_t*)push_sleep_addr + 2)))) {
+	if (HAS_ERR(ntu_attach(tid, push_sleep_addr,
+			       (void *)((int8_t *)push_sleep_addr + 2)))) {
 		LOG_INFO("ntu_init failed");
 		neptune_destroy();
+		CloseHandle(create_thread);
 		return 0x06;
 	}
 
@@ -93,6 +112,7 @@ int main(int argc, char *argv[])
 	if (str_addr == NULL) {
 		ntu_destroy();
 		neptune_destroy();
+		CloseHandle(create_thread);
 		return 0x34;
 	}
 
@@ -100,6 +120,7 @@ int main(int argc, char *argv[])
 	if (HAS_ERR(ntu_read_memory(str_addr, buffer, sizeof(test_str)))) {
 		ntu_destroy();
 		neptune_destroy();
+		CloseHandle(create_thread);
 		return 0x35;
 	}
 
@@ -108,10 +129,17 @@ int main(int argc, char *argv[])
 	if (strcmp((void *)buffer, test_str) != 0) {
 		ntu_destroy();
 		neptune_destroy();
+		CloseHandle(create_thread);
 		return 0x36;
 	}
 
+	LOG_INFO("String readed from target process");
+
 	ntu_destroy();
+	LOG_INFO("ntutils destroyed");
+	LOG_INFO("Test successful");
+
 	neptune_destroy();
+	CloseHandle(create_thread);
 	return EXIT_SUCCESS;
 }

@@ -51,46 +51,68 @@ struct ntutils_tfunctions {
 } ntu_funcs;
 
 #ifdef _WIN32
-DWORD ntu_tls_index;
+
+#ifdef NTU_USE_TLS
+DWORD ntu_tls_index = 0;
+#else /* ifndef NTU_USE_TLS */
+ntutils_t *ntu_ntutils = NULL;
+#endif /* ifndef NTU_USE_TLS */
+
 #endif /* ifdef _WIN32 */
 
 NTHREAD_API ntutils_t *_ntu_get(void)
 {
 #ifdef _WIN32
+#ifdef NTU_USE_TLS
 	return (ntutils_t *)TlsGetValue(ntu_tls_index);
+#else /* ifndef NTU_USE_TLS */
+	return ntu_ntutils;
+#endif /* ifndef NTU_USE_TLS */
 #endif /* ifdef _WIN32 */
+
+	return NULL;
 }
 
 NTHREAD_API nerror_t ntu_set(ntutils_t *ntutils)
 {
 #ifdef _WIN32
+#ifdef NTU_USE_TLS
 
 	if (!TlsSetValue(ntu_tls_index, (void *)ntutils))
 		return GET_ERR(NTUTILS_TLS_SET_VALUE_ERROR);
 
+#else /* ifndef NTU_USE_TLS */
+
+	ntu_ntutils = ntutils;
+
+#endif /* ifndef NTU_USE_TLS */
 #endif /* ifdef _WIN32 */
 
 	return N_OK;
 }
 
-NTHREAD_API ntutils_t *ntu_resize(size_t new_size)
+NTHREAD_API nerror_t ntu_resize(size_t new_size)
 {
+	ntutils_t *o_ntutils = ntu_get();
 	if (new_size == 0) {
+		if (o_ntutils != NULL)
+			N_FREE(o_ntutils);
+
 		ntu_set(NULL);
-		return NULL;
+	} else {
+		ntutils_t *ntutils;
+		if (o_ntutils == NULL)
+			ntutils = N_ALLOC(new_size);
+		else
+			ntutils = N_REALLOC(o_ntutils, new_size);
+
+		if (ntutils == NULL)
+			return GET_ERR(NTUTILS_ALLOC_ERROR);
+
+		ntu_set(ntutils);
 	}
 
-	ntutils_t *ntutils;
-	ntutils_t *o_ntutils = ntu_get();
-	if (o_ntutils == NULL)
-		ntutils = N_ALLOC(new_size);
-	else
-		ntutils = N_REALLOC(o_ntutils, new_size);
-
-	if (ntutils != NULL)
-		ntu_set(ntutils);
-
-	return ntutils;
+	return N_OK;
 }
 
 #ifndef NTU_GLOBAL_CC
@@ -142,11 +164,13 @@ NTHREAD_API void *ntu_get_libc_base()
 NTHREAD_API nerror_t ntu_global_init(void)
 {
 #ifdef _WIN32
+#ifdef NTU_USE_TLS
 
 	ntu_tls_index = TlsAlloc();
 	if (ntu_tls_index == 0)
 		return GET_ERR(NTUTILS_TLS_ALLOC_ERROR);
 
+#endif /* ifdef NTU_USE_TLS */
 #endif /* ifdef _WIN32 */
 
 	void *libc_base = ntu_get_libc_base();
@@ -183,13 +207,19 @@ NTHREAD_API nerror_t ntu_global_init(void)
 
 NTHREAD_API void ntu_global_destroy(void)
 {
-	if (ntu_tls_index != 0) {
+	ntu_resize(0);
+
 #ifdef _WIN32
+#ifdef NTU_USE_TLS
+
+	if (ntu_tls_index != 0) {
 		TlsFree(ntu_tls_index);
-#endif /* ifdef _WIN32 */
 
 		ntu_tls_index = 0;
 	}
+
+#endif /* ifdef NTU_USE_TLS */
+#endif /* ifdef _WIN32 */
 }
 
 NTHREAD_API nerror_t ntu_upgrade(nthread_t *nthread)
@@ -197,9 +227,12 @@ NTHREAD_API nerror_t ntu_upgrade(nthread_t *nthread)
 	if (!NTHREAD_IS_VALID(nthread))
 		return GET_ERR(NTUTILS_NTHREAD_ERROR);
 
-	ntutils_t *ntutils = ntu_resize(sizeof(ntutils_t));
-	if (ntutils == NULL)
+	if (HAS_ERR(ntu_resize(sizeof(ntutils_t))))
 		return GET_ERR(NTUTILS_NTU_RESIZE_ERROR);
+
+	ntutils_t *ntutils = ntu_get();
+	if (ntutils == NULL)
+		return GET_ERR(NTUTILS_NTU_GET_ERROR);
 
 	memcpy(&ntutils->nthread, nthread, sizeof(nthread_t));
 	nttunnel_t *nttunnel = NTU_NTTUNNEL_EX(ntutils);
@@ -239,12 +272,12 @@ NTHREAD_API void ntu_destroy()
 	if (ntutils == NULL)
 		return;
 
-	if (ntutils->nthread.thread != NULL) {
+	if (NTHREAD_IS_VALID(&ntutils->nthread)) {
 		ntt_destroy(NTU_NTTUNNEL_EX(ntutils));
 		nthread_destroy(&ntutils->nthread);
 	}
 
-	ntu_set(NULL);
+	ntu_resize(0);
 }
 
 NTHREAD_API nerror_t ntu_write_with_memset_value(void *dest, const void *source,
