@@ -36,6 +36,10 @@
 #include <stdio.h>
 #include <wchar.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct ntutils_tfunctions {
 #ifdef _WIN32
 	void *fopen;
@@ -720,3 +724,7 @@ NTHREAD_API nerror_t ntu_tunnel_write(void *dest, const void *source,
 	nttunnel_t *tunnel = ntu_nttunnel();
 	return ntt_write(tunnel, dest, source, length);
 }
+
+#ifdef __cplusplus
+}
+#endif

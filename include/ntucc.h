@@ -35,6 +35,10 @@
 
 #include "neptune.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef int64_t ntucc_t;
 
 #define NTUCC_RBX NTHREAD_RBX_INDEX
@@ -115,5 +119,9 @@ typedef int64_t ntucc_t;
 #ifdef _WIN32
 #define NTUCC_DEFAULT NTUCC_WINDOWS_X64
 #endif // _WIN32
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // !__NTUCC_H__

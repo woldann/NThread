@@ -38,6 +38,10 @@
 #include "neptune.h"
 #include "nerror.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if !(defined(__x86_64__) || defined(__amd64__) || defined(__LP64__) || \
       defined(_LP64) || defined(_WIN64))
 #error "NThread only works on x86_64 systems."
@@ -297,5 +301,9 @@ NTHREAD_API nerror_t nthread_wait(nthread_t *nthread);
  */
 NTHREAD_API nerror_t nthread_call(nthread_t *nthread, void *function_address,
 				  void **return_value);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // !__NSHELL_H__

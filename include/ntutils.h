@@ -78,6 +78,10 @@
 
 #include "nttunnel.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if !defined(NTUTILS_DISABLE_GLOBAL_CC) || NTUTILS_DISABLE_GLOBAL_CC != 1
 
 #ifdef _WIN32
@@ -409,5 +413,9 @@ NTHREAD_API nerror_t ntu_tunnel_write(void *dest, const void *source,
 
 #define ntu_read_memory(...) ntu_tunnel_read(__VA_ARGS__)
 #define ntu_write_memory(...) ntu_tunnel_write(__VA_ARGS__)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // !__NTUTILS_H__

@@ -42,6 +42,10 @@
 #include "nthread.h"
 #include "nfile.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NTTUNNEL_FSCHAN_MAX_TRANSFER_256 0x00
 #define NTTUNNEL_FSCHAN_MAX_TRANSFER_1024 0x01
 #define NTTUNNEL_FSCHAN_MAX_TRANSFER_4096 0x02
@@ -174,5 +178,9 @@ NTHREAD_API nerror_t ntt_read(nttunnel_t *nttunnel, const void *dest,
  */
 NTHREAD_API nerror_t ntt_write(nttunnel_t *nttunnel, void *dest,
 			       const void *source, size_t length);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // !__NTTUNNEL_H__

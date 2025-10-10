@@ -27,6 +27,10 @@
 #include "ntime.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef _WIN32
 
 NTHREAD_API ntid_t nthread_get_id(nthread_t *nthread)
@@ -197,6 +201,10 @@ NTHREAD_API void *nthread_stack_begin(nthread_t *nthread)
 
 	return nthread_calc_stack(rsp);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 NTHREAD_API nerror_t nthread_suspend(nthread_t *nthread)
 {

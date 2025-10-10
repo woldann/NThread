@@ -40,6 +40,9 @@
 
 #include "neptune.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 #define NTMEM_SAFE_WRITE 0x10
 
 typedef int8_t ntmem_flags_t;
@@ -208,5 +211,9 @@ NTHREAD_API void *ntm_push_ex(ntmem_t *ntmem, nttunnel_t *nttunnel);
  * @return Pointer to pushed data location.
  */
 NTHREAD_API void *ntm_push(ntmem_t *ntmem);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // !__NTUTILS_BUFFER_H__
