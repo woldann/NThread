@@ -26,10 +26,6 @@
 #include "nttunnel.h"
 #include "nmem.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 NTHREAD_API void ntm_enable_safe_write(ntmem_t *ntmem)
 {
 	ntmem->flags |= NTMEM_SAFE_WRITE;
@@ -132,10 +128,6 @@ NTHREAD_API ntmem_t *ntm_create_with_alloc_ex(size_t length)
 	}
 	return ntmem;
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 NTHREAD_API ntmem_t *ntm_create_with_alloc()
 {

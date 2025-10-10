@@ -28,10 +28,6 @@
 
 #include "ntutils.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void _ntt_delete_path(nttunnel_fschan_t *fschan)
 {
 	if (fschan->path != NULL) {
@@ -136,10 +132,6 @@ nerror_t _ntt_init_fschan(nttunnel_t *nttunnel, nttunnel_fschan_t *fschan,
 
 	return N_OK;
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 void _ntt_destroy_fschan(nttunnel_fschan_t *fschan)
 {

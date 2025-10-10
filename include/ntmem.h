@@ -216,4 +216,4 @@ NTHREAD_API void *ntm_push(ntmem_t *ntmem);
 }
 #endif
 
-#endif // !__NTUTILS_BUFFER_H__
+#endif // !__NTMEM_H__

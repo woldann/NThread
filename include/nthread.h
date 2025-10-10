@@ -35,12 +35,12 @@
 #ifndef __NTHREAD_H__
 #define __NTHREAD_H__
 
-#include "neptune.h"
-#include "nerror.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include "neptune.h"
+#include "nerror.h"
 
 #if !(defined(__x86_64__) || defined(__amd64__) || defined(__LP64__) || \
       defined(_LP64) || defined(_WIN64))
